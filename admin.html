@@ -28,9 +28,9 @@
     <div id="receipt-modal" class="fixed inset-0 bg-[#07090e]/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md rounded-3xl p-6 border border-slate-800 relative shadow-2xl text-center">
             <button onclick="closeReceiptModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <h3 class="text-sm font-bold text-white mb-4">Müşteri Ödeme Dekontu / Kanıtı</h3>
+            <h3 class="text-sm font-bold text-white mb-4">Müşteri Ödeme Dekontu</h3>
             <div id="receipt-img-container" class="bg-slate-950 p-2 rounded-xl border border-slate-800 mb-4 flex items-center justify-center max-h-96 overflow-hidden">
-                <span class="text-slate-500 text-xs">Dekont yüklenmedi veya metin tabanlı.</span>
+                <span class="text-slate-500 text-xs">Dekont yükleniyor...</span>
             </div>
             <div id="receipt-actions"></div>
         </div>
@@ -47,7 +47,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Video / Ürün Ekleme Paneli -->
+            <!-- Video Ekleme -->
             <div class="glass rounded-3xl p-6 md:p-8 border border-slate-800/80 space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4 text-red-600"></i> Yeni Arşiv Videosu Ekle
@@ -61,24 +61,24 @@
                         <option value="Mega Paket">Mega Paket</option>
                         <option value="Sinema & Dizi">Sinema & Dizi</option>
                     </select>
-                    <input type="number" id="new-price" placeholder="Fiyat (₺) (Ücretsiz için 0 yazın)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
+                    <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
                     <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
                 </div>
                 <button onclick="addNewProduct()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20">Arşivi Yayınla</button>
             </div>
 
-            <!-- IBAN / Kripto Cüzdan Ekleme ve Silme Paneli -->
+            <!-- IBAN / Kripto Ekleme -->
             <div class="glass rounded-3xl p-6 md:p-8 border border-slate-800/80 space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i> Ödeme Hesapları (IBAN & Kripto)
                 </h3>
                 <div class="space-y-3">
-                    <input type="text" id="acc-name" placeholder="Hesap Adı (Örn: Enpara IBAN veya USDT Cüzdanı)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
+                    <input type="text" id="acc-name" placeholder="Hesap Adı" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
                     <select id="acc-type" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
                         <option value="Banka / IBAN">Banka / IBAN</option>
                         <option value="Kripto">Kripto (USDT / BTC vb.)</option>
                     </select>
-                    <textarea id="acc-detail" placeholder="IBAN Numarası veya Cüzdan Adresi" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition"></textarea>
+                    <textarea id="acc-detail" placeholder="IBAN veya Cüzdan Adresi" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition"></textarea>
                 </div>
                 <button onclick="addPaymentAccount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-emerald-600/20">Yeni Hesap Ekle</button>
                 
@@ -177,7 +177,7 @@
             let accList = document.getElementById('admin-accounts-list');
             let accounts = db.accounts || [];
             if(accounts.length === 0) {
-                accList.innerHTML = `<p class='text-slate-600 text-xs'>Henüz eklenmiş özel hesap yok.</p>";`;
+                accList.innerHTML = `<p class='text-slate-600 text-xs'>Henüz eklenmiş özel hesap yok.</p>`;
             } else {
                 accList.innerHTML = '';
                 accounts.forEach((acc, i) => {
@@ -203,11 +203,10 @@
 
             modal.classList.remove('hidden');
             
-            // Eğer dekont olarak base64 veya görsel kaydedildiyse göster
-            if(order.receipt && order.receipt.startsWith('data:image')) {
-                container.innerHTML = `<img src="${order.receipt}" class="max-h-80 object-contain rounded-lg">`;
+            if(order.receipt && order.receipt.length > 50) {
+                container.innerHTML = `<img src="${order.receipt}" class="max-h-80 max-w-full object-contain rounded-lg">`;
             } else {
-                container.innerHTML = `<div class="text-slate-400 text-xs p-4">Müşteri dekont yüklemedi veya metin tabanlı bildirim gönderdi. Sürücü / İşlem ID: ${order.receipt || 'Yok'}</div>`;
+                container.innerHTML = `<div class="text-slate-400 text-xs p-4">Dekont görseli bulunamadı veya hatalı yüklenmiş.</div>`;
             }
 
             actions.innerHTML = `

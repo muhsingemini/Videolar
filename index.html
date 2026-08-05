@@ -59,7 +59,7 @@
         <!-- Sayfalama -->
         <div id="pagination-container" class="flex justify-center items-center gap-2 mb-16"></div>
 
-        <!-- İndirme Paneli (Kalıcı Kilit Açma) -->
+        <!-- İndirme Paneli -->
         <div id="downloads-section" class="glass rounded-3xl p-6 hidden border border-slate-800/80 mb-12 animate-fade">
             <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-emerald-400">
                 <i data-lucide="check-circle-2" class="w-4 h-4"></i> Onaylanan ve Kalıcı Olarak Erişilebilir Arşivleriniz
@@ -376,7 +376,7 @@
                     items: itemsText,
                     total: totalVal,
                     status: 'Bekliyor',
-                    receipt: base64Image // Görselin eksiksiz kaydedilmesi
+                    receipt: base64Image
                 });
                 await saveDatabase(db);
 
@@ -390,7 +390,6 @@
         async function checkUserDownloads() {
             if(!currentUser) return;
             let db = await getDatabase();
-            // Bu kullanıcıya ait onaylanmış tüm siparişleri buluyoruz
             let myOrders = (db.orders || []).filter(o => o.username === currentUser.username && o.status === 'Onaylandı');
             
             if(myOrders.length > 0) {
