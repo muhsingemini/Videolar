@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Özel Arşiv & Medya Platformu</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -36,14 +37,14 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
+    <!-- Main Content -->
     <main class="max-w-6xl mx-auto px-4 py-12">
         <div class="text-center max-w-2xl mx-auto mb-16 space-y-4">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold animate-pulse">
-                <span class="w-2 h-2 rounded-full bg-red-500"></span> Yeni Yüksek Kalite Setler Eklendi
+                <span class="w-2 h-2 rounded-full bg-red-500"></span> Bulut Veritabanı Aktif
             </div>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">Özel Eğlence & Uzun Soluklu <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-400">Özel Arşiv</span></h1>
-            <p class="text-slate-400 text-base">Güvenli altyapı, anında onay sistemi ve kesintisiz yüksek çözünürlüklü içerikler.</p>
+            <p class="text-slate-400 text-base">Güvenli bulut altyapısı, anında onay sistemi ve kesintisiz içerikler.</p>
         </div>
 
         <!-- Ürünler -->
@@ -58,7 +59,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">150 ₺</span>
-                    <button onclick="addToCart('Özel Eğlence Vol. 1', 150, 'video1')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Özel Eğlence Vol. 1', '150', 'video1')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
 
@@ -72,7 +73,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">250 ₺</span>
-                    <button onclick="addToCart('Gece Serisi Özel Set', 250, 'video2')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Gece Serisi Özel Set', '250', 'video2')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
 
@@ -86,7 +87,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">400 ₺</span>
-                    <button onclick="addToCart('Mega Paket (Hepsi)', 400, 'video3')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Mega Paket (Hepsi)', '400', 'video3')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
         </div>
@@ -154,6 +155,10 @@
     <script>
         lucide.createIcons();
 
+        const SUPABASE_URL = 'https://smecqlefagohyatzgso.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_secret_b5zVX4YZnaA9vzsbTqc9YQ_VOBq5jqg';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         let isRegister = false;
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
         let cart = [];
@@ -170,28 +175,26 @@
             document.getElementById('auth-switch').innerText = isRegister ? "Zaten hesabın var mı? Giriş yap" : "Hesabın yok mu? Kayıt ol";
         }
 
-        function handleAuth() {
+        async function handleAuth() {
             const username = document.getElementById('auth-username').value.trim();
             const pass = document.getElementById('auth-pass').value.trim();
             if(!username || !pass) { alert("Lütfen tüm alanları doldurun!"); return; }
 
-            let users = JSON.parse(localStorage.getItem('site_users')) || [];
-
             if(isRegister) {
-                if(users.some(u => u.username === username)) {
-                    alert("Bu kullanıcı adı zaten alınmış!");
+                const { error } = await supabaseClient.from('profiles').insert([{ username: username, password: pass }]);
+                if(error) {
+                    alert("Kayıt hatası (Bu kullanıcı adı alınmış olabilir): " + error.message);
                     return;
                 }
-                users.push({ username, password: pass });
-                localStorage.setItem('site_users', JSON.stringify(users));
                 alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
                 switchAuthMode();
             } else {
-                let user = users.find(u => u.username === username && u.password === pass);
-                if(user) {
-                    currentUser = user;
+                const { data, error } = await supabaseClient.from('profiles').select('*').eq('username', username).eq('password', pass).single();
+                if(data) {
+                    currentUser = data;
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     checkSession();
+                    location.reload();
                 } else {
                     alert("Kullanıcı adı veya şifre hatalı!");
                 }
@@ -224,37 +227,38 @@
             alert("Ürün sepete eklendi!");
         }
 
-        function checkout() {
+        async function checkout() {
             const file = document.getElementById('receipt-file').files[0];
             if(cart.length === 0 || !file) { alert("Sepetiniz boş veya dekont yüklenmedi!"); return; }
 
             let itemsText = cart.map(i => i.name).join(", ");
-            let totalVal = cart.reduce((sum, i) => sum + i.price, 0) + " ₺";
+            let totalVal = cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺";
 
-            let orders = JSON.parse(localStorage.getItem('site_orders')) || [];
-            orders.push({
-                id: 'ord_' + Date.now(),
+            const { error } = await supabaseClient.from('orders').insert([{
                 username: currentUser.username,
                 items: itemsText,
                 total: totalVal,
                 status: 'Bekliyor'
-            });
-            localStorage.setItem('site_orders', JSON.stringify(orders));
+            }]);
 
-            alert("Ödeme bildiriminiz başarıyla iletildi! Admin onayından sonra kilit açılacaktır.");
+            if(error) {
+                alert("Sipariş verilemedi: " + error.message);
+                return;
+            }
+
+            alert("Ödeme bildiriminiz başarıyla buluta iletildi! Admin onayından sonra kilit açılacaktır.");
             location.reload();
         }
 
-        function checkUserDownloads() {
+        async function checkUserDownloads() {
             if(!currentUser) return;
-            let orders = JSON.parse(localStorage.getItem('site_orders')) || [];
-            let myOrders = orders.filter(o => o.username === currentUser.username && o.status === 'Onaylandı');
+            const { data: orders } = await supabaseClient.from('orders').select('*').eq('username', currentUser.username).eq('status', 'Onaylandı');
             
-            if(myOrders.length > 0) {
+            if(orders && orders.length > 0) {
                 document.getElementById('downloads-section').classList.remove('hidden');
                 let container = document.getElementById('user-downloads');
                 container.innerHTML = '';
-                myOrders.forEach(order => {
+                orders.forEach(order => {
                     container.innerHTML += `<a href="videolar/${order.id}.mp4" download class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl transition text-sm font-bold text-white group"><span>📥 ${order.items}</span><span class="text-xs text-red-500 group-hover:underline">İndir</span></a>`;
                 });
             }
