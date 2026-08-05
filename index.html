@@ -3,32 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEISENBERG // SECURE ARCHIVE</title>
+    <title>Heisenberg</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Share Tech Mono', monospace; background-color: #020408; color: #00ff66; }
-        .matrix-glow { box-shadow: 0 0 20px rgba(0, 255, 102, 0.2); }
-        .matrix-border { border: 1px solid rgba(0, 255, 102, 0.2); }
-        .glass-terminal { background: rgba(2, 6, 15, 0.9); backdrop-filter: blur(10px); }
+        body { font-family: 'Share Tech Mono', monospace; background-color: #0b0f17; color: #94a3b8; }
+        .terminal-box { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
     </style>
 </head>
-<body class="bg-[#020408] text-[#00ff66] min-h-screen selection:bg-red-600 selection:text-white">
+<body class="bg-[#0b0f17] text-slate-300 min-h-screen selection:bg-red-900 selection:text-white">
 
-    <!-- Navbar / Header (Logo Yok, Sadece Terminal Başlığı) -->
-    <header class="border-b border-[#00ff66]/20 sticky top-0 glass-terminal z-40">
+    <!-- Navbar -->
+    <header class="border-b border-slate-900 sticky top-0 bg-[#0b0f17]/90 backdrop-blur-md z-40">
         <div class="max-w-6xl mx-auto px-4 h-20 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <span class="text-red-500 font-bold tracking-widest text-lg">[SYS_ROOT@HEISENBERG:~]#</span>
+                <span class="text-white font-extrabold text-xl tracking-wider">Heisenberg</span>
             </div>
             
             <div class="flex items-center gap-4">
-                <div id="user-display" class="text-sm font-bold text-slate-300"></div>
-                <button onclick="toggleCart()" class="relative bg-black border border-[#00ff66]/40 hover:border-[#00ff66] px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 text-[#00ff66]">
-                    <i data-lucide="terminal" class="w-4 h-4 text-red-500"></i>
-                    <span>SEPET</span>
-                    <span id="cart-count" class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                <div id="user-display" class="text-xs text-slate-400"></div>
+                <button onclick="toggleCart()" class="relative bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-200">
+                    <i data-lucide="shopping-bag" class="w-4 h-4 text-slate-400"></i>
+                    <span>Sepet</span>
+                    <span id="cart-count" class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
             </div>
         </div>
@@ -36,83 +34,80 @@
 
     <!-- Main Content -->
     <main class="max-w-6xl mx-auto px-4 py-12">
-        <div class="text-center max-w-2xl mx-auto mb-12 space-y-4">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-600/10 border border-red-600/30 text-red-500 text-xs font-bold animate-pulse">
-                <span class="w-2 h-2 rounded-full bg-red-600"></span> SECURE CONNECTION ESTABLISHED
-            </div>
-            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white uppercase glitch-text">YERALTI ARŞİV SİSTEMİ</h1>
-            <p class="text-slate-400 text-sm">5 Farkli sinifta şifrelenmiş özel video setleri ve veri paketleri.</p>
+        <div class="text-center max-w-2xl mx-auto mb-12 space-y-3">
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white uppercase">Güvenli Arşiv Paneli</h1>
+            <p class="text-slate-500 text-xs">Şifrelenmiş özel video setleri, örnek bedava içerikler ve veri paketleri.</p>
         </div>
 
-        <!-- 5 Kategori Filtresi -->
-        <div class="flex flex-wrap justify-center gap-3 mb-12" id="category-filters">
-            <button onclick="filterCategory('Tümü')" class="cat-btn bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-red-600/30">TÜMÜ</button>
-            <button onclick="filterCategory('Özel Eğlence')" class="cat-btn bg-black border border-[#00ff66]/30 text-[#00ff66] hover:border-[#00ff66] px-4 py-2 rounded-lg text-xs font-semibold transition">ÖZEL EĞLENCE</button>
-            <button onclick="filterCategory('Gece Serisi')" class="cat-btn bg-black border border-[#00ff66]/30 text-[#00ff66] hover:border-[#00ff66] px-4 py-2 rounded-lg text-xs font-semibold transition">GECE SERİSİ</button>
-            <button onclick="filterCategory('Mega Paket')" class="cat-btn bg-black border border-[#00ff66]/30 text-[#00ff66] hover:border-[#00ff66] px-4 py-2 rounded-lg text-xs font-semibold transition">MEGA PAKET</button>
-            <button onclick="filterCategory('Sinema & Dizi')" class="cat-btn bg-black border border-[#00ff66]/30 text-[#00ff66] hover:border-[#00ff66] px-4 py-2 rounded-lg text-xs font-semibold transition">SİNEMA & DİZİ</button>
-            <button onclick="filterCategory('Belgesel & Eğitim')" class="cat-btn bg-black border border-[#00ff66]/30 text-[#00ff66] hover:border-[#00ff66] px-4 py-2 rounded-lg text-xs font-semibold transition">BELGESEL & EĞİTİM</button>
+        <!-- Kategori Filtreleri -->
+        <div class="flex flex-wrap justify-center gap-2 mb-12" id="category-filters">
+            <button onclick="filterCategory('Tümü')" class="cat-btn bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition">Tümü</button>
+            <button onclick="filterCategory('Ücretsiz')" class="cat-btn bg-slate-900 border border-emerald-600/40 text-emerald-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Ücretsiz Örnekler</button>
+            <button onclick="filterCategory('Özel Eğlence')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Özel Eğlence</button>
+            <button onclick="filterCategory('Gece Serisi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Gece Serisi</button>
+            <button onclick="filterCategory('Mega Paket')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Mega Paket</button>
+            <button onclick="filterCategory('Sinema & Dizi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Sinema & Dizi</button>
         </div>
 
         <!-- Ürünler -->
-        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"></div>
+        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16"></div>
 
         <!-- İndirme Paneli -->
-        <div id="downloads-section" class="glass-terminal rounded-2xl p-8 hidden border border-[#00ff66]/30 matrix-glow">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-[#00ff66]">
-                <i data-lucide="shield-check" class="w-5 h-5 text-red-500"></i> ŞİFRESİ ÇÖZÜLEN ARŞİVLER
+        <div id="downloads-section" class="terminal-box rounded-2xl p-6 hidden border border-slate-800 mb-12">
+            <h3 class="text-sm font-bold mb-4 flex items-center gap-2 text-emerald-400">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Onaylanan ve Erişilebilir Arşivleriniz
             </h3>
             <div id="user-downloads" class="space-y-3"></div>
         </div>
     </main>
 
     <!-- Auth Modal -->
-    <div id="auth-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-terminal w-full max-w-md rounded-2xl p-8 matrix-border shadow-2xl relative">
+    <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="terminal-box w-full max-w-md rounded-2xl p-6 border border-slate-800 relative">
             <div class="text-center mb-6">
-                <span class="text-red-500 font-bold text-xs">[EKSİK GÜVENLİK DOĞRULAMASI]</span>
-                <h3 id="auth-title" class="text-2xl font-extrabold mt-2 text-white">SİSTEME GİRİŞ</h3>
+                <h3 id="auth-title" class="text-xl font-bold text-white">Giriş Yap</h3>
+                <p class="text-slate-500 text-xs mt-1">Devam etmek için hesabınıza giriş yapın.</p>
             </div>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-[#00ff66] mb-1">KULLANICI KODU:</label>
-                    <input type="text" id="auth-username" class="w-full bg-black border border-[#00ff66]/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-red-500 text-white">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Kullanıcı Adı</label>
+                    <input type="text" id="auth-username" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-red-600 text-white">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-[#00ff66] mb-1">ERİŞİM ŞİFRESİ:</label>
-                    <input type="password" id="auth-pass" class="w-full bg-black border border-[#00ff66]/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-red-500 text-white">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Şifre</label>
+                    <input type="password" id="auth-pass" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-red-600 text-white">
                 </div>
-                <button onclick="handleAuth()" id="auth-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-red-600/30">ERİŞİM İSTE</button>
-                <button onclick="switchAuthMode()" id="auth-switch" class="w-full text-slate-400 text-xs hover:text-white transition text-center underline pt-2">Kayıtlı değil misin? Yeni kayıt oluştur</button>
+                <button onclick="handleAuth()" id="auth-btn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-xl transition text-xs">Giriş Yap</button>
+                <button onclick="switchAuthMode()" id="auth-switch" class="w-full text-slate-500 text-xs hover:text-slate-300 transition text-center underline pt-1">Hesabın yok mu? Kayıt ol</button>
             </div>
         </div>
     </div>
 
-    <!-- Sepet & Ödeme Modal -->
-    <div id="cart-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-        <div class="glass-terminal w-full max-w-lg rounded-2xl p-8 matrix-border relative max-h-[90vh] overflow-y-auto">
-            <button onclick="toggleCart()" class="absolute top-6 right-6 text-red-500 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <h3 class="text-xl font-extrabold mb-6 text-white">AKTİF SEPET & ÖDEME</h3>
+    <!-- Sepet Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="terminal-box w-full max-w-lg rounded-2xl p-6 border border-slate-800 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="toggleCart()" class="absolute top-5 right-5 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            <h3 class="text-lg font-bold mb-4 text-white">Sepetiniz & Ödeme</h3>
             
-            <div id="cart-items" class="space-y-3 mb-6 max-h-40 overflow-y-auto"></div>
+            <div id="cart-items" class="space-y-2 mb-4 max-h-36 overflow-y-auto"></div>
             
-            <div class="border-t border-[#00ff66]/20 pt-4 mb-6 flex justify-between font-bold text-lg text-white">
-                <span>TOPLAM:</span>
-                <span id="cart-total" class="text-red-500">0 ₺</span>
+            <div class="border-t border-slate-800 pt-3 mb-4 flex justify-between font-bold text-sm text-white">
+                <span>Toplam Tutar:</span>
+                <span id="cart-total" class="text-emerald-400">0 ₺</span>
             </div>
 
-            <div class="space-y-4 mb-6">
-                <p class="text-xs font-bold text-amber-400 flex items-center gap-1.5"><i data-lucide="terminal" class="w-4 h-4"></i> GÜVENLİ AKTARIM HESAPLARI:</p>
+            <div class="space-y-3 mb-4">
+                <p class="text-xs font-bold text-slate-400 flex items-center gap-1.5"><i data-lucide="wallet" class="w-3.5 h-3.5"></i> Ödeme Yapılabilecek Aktif Hesaplar:</p>
                 <div id="payment-accounts-list" class="space-y-2"></div>
             </div>
 
-            <div class="bg-black p-4 rounded-xl border border-[#00ff66]/20 mb-6 text-xs">
-                <label class="block text-slate-400 mb-1 font-bold">ÖDEME DEKONTU VEYA HASH KODU:</label>
-                <input type="file" id="receipt-file" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white cursor-pointer">
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 mb-4 text-xs">
+                <label class="block text-slate-400 mb-1 font-medium">Ödeme Dekontu Görseli:</label>
+                <input type="file" id="receipt-file" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-700 file:text-white cursor-pointer">
             </div>
 
-            <button onclick="checkout()" class="w-full bg-[#00ff66] hover:bg-[#00cc52] text-black font-extrabold py-3.5 rounded-xl transition shadow-lg shadow-[#00ff66]/20">BİLDİRİMİ GÖNDER</button>
+            <button onclick="checkout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs">Ödemeyi Bildir & Sipariş Oluştur</button>
         </div>
     </div>
 
@@ -136,9 +131,9 @@
 
         function switchAuthMode() {
             isRegister = !isRegister;
-            document.getElementById('auth-title').innerText = isRegister ? "YENİ AJAN KAYDI" : "SİSTEME GİRİŞ";
-            document.getElementById('auth-btn').innerText = isRegister ? "KAYDI TAMAMLA" : "ERİŞİM İSTE";
-            document.getElementById('auth-switch').innerText = isRegister ? "Zaten kayıtlı mısın? Giriş yap" : "Kayıtlı değil misin? Yeni kayıt oluştur";
+            document.getElementById('auth-title').innerText = isRegister ? "Yeni Hesap Oluştur" : "Giriş Yap";
+            document.getElementById('auth-btn').innerText = isRegister ? "Kayıt Ol ve Başla" : "Giriş Yap";
+            document.getElementById('auth-switch').innerText = isRegister ? "Zaten hesabın var mı? Giriş yap" : "Hesabın yok mu? Kayıt ol";
         }
 
         async function getDatabase() {
@@ -170,6 +165,7 @@
             
             if(allProducts.length === 0) {
                 allProducts = [
+                    { id: 'p0', title: 'Ücretsiz Örnek Demo Video', category: 'Ücretsiz', price: '0', image: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500' },
                     { id: 'p1', title: 'Özel Eğlence Vol. 1', category: 'Özel Eğlence', price: '150', image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500' },
                     { id: 'p2', title: 'Gece Serisi Özel Set', category: 'Gece Serisi', price: '250', image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500' },
                     { id: 'p3', title: 'Mega Paket Arşivi', category: 'Mega Paket', price: '400', image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500' }
@@ -183,7 +179,7 @@
             let container = document.getElementById('payment-accounts-list');
             if(!accounts || accounts.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-black p-3 rounded-xl border border-[#00ff66]/20 text-xs text-[#00ff66] font-mono">
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] text-slate-300 font-mono">
                         TR00 0000 0000 0000 0000 0000 00 (Varsayılan IBAN - Muhsin B.)
                     </div>
                 `;
@@ -193,9 +189,9 @@
             accounts.forEach(acc => {
                 let icon = acc.type === 'Kripto' ? '🪙' : '🏦';
                 container.innerHTML += `
-                    <div class="bg-black p-3 rounded-xl border border-[#00ff66]/20 text-xs space-y-1">
-                        <div class="font-bold text-red-500">${icon} ${acc.name} (${acc.type})</div>
-                        <div class="font-mono text-slate-300 select-all">${acc.detail}</div>
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] space-y-0.5">
+                        <div class="font-bold text-slate-200">${icon} ${acc.name} (${acc.type})</div>
+                        <div class="font-mono text-slate-400 select-all">${acc.detail}</div>
                     </div>
                 `;
             });
@@ -204,10 +200,10 @@
         function filterCategory(cat) {
             currentFilter = cat;
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                if(btn.innerText.includes(cat.toUpperCase()) || (cat === 'Tümü' && btn.innerText === 'TÜMÜ')) {
-                    btn.className = "cat-btn bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-red-600/30";
+                if(btn.innerText.includes(cat)) {
+                    btn.className = "cat-btn bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition";
                 } else {
-                    btn.className = "cat-btn bg-black border border-[#00ff66]/30 text-[#00ff66] hover:border-[#00ff66] px-4 py-2 rounded-lg text-xs font-semibold transition";
+                    btn.className = "cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition";
                 }
             });
             renderProducts();
@@ -220,29 +216,41 @@
             let filtered = currentFilter === 'Tümü' ? allProducts : allProducts.filter(p => p.category === currentFilter);
             
             if(filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-3 text-center py-12 text-slate-500">Bu sınıfta kayıtlı veri bulunamadı.</div>`;
+                grid.innerHTML = `<div class="col-span-3 text-center py-12 text-slate-600 text-xs">Bu kategoride henüz arşiv bulunmuyor.</div>`;
                 return;
             }
 
             filtered.forEach(p => {
+                let isFree = p.price === '0' || p.price === 0;
+                let priceText = isFree ? '<span class="text-emerald-400 font-black">Ücretsiz</span>' : `<span class="text-emerald-400 font-black">${p.price} ₺</span>`;
+                let btnAction = isFree ? `<button onclick="claimFree('${p.title}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition">Hemen İndir</button>` : `<button onclick="addToCart('${p.title}', '${p.price}', '${p.id}')" class="bg-red-700 hover:bg-red-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition">Sepete Ekle</button>`;
+
                 grid.innerHTML += `
-                    <div class="glass-terminal rounded-2xl p-6 flex flex-col justify-between matrix-border hover:border-red-600 transition duration-300 group">
+                    <div class="terminal-box rounded-2xl p-5 flex flex-col justify-between border border-slate-800/80 hover:border-slate-700 transition duration-300">
                         <div>
-                            <div class="aspect-video bg-black rounded-xl overflow-hidden relative mb-5 border border-[#00ff66]/20 flex items-center justify-center">
-                                <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-80">
-                                <span class="absolute top-3 left-3 bg-black/90 px-3 py-1 rounded-full text-[10px] font-bold text-red-500 border border-red-500/30">${p.category}</span>
+                            <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative mb-4 border border-slate-800 flex items-center justify-center">
+                                <img src="${p.image}" class="w-full h-full object-cover opacity-80">
+                                <span class="absolute top-2 left-2 bg-slate-950/90 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isFree ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 border-slate-800'} border">${p.category}</span>
                             </div>
-                            <h3 class="font-bold text-lg mb-1 text-white">${p.title}</h3>
-                            <p class="text-slate-400 text-xs mb-6">Şifrelenmiş yüksek çözünürlüklü arşiv verisi.</p>
+                            <h3 class="font-bold text-sm mb-1 text-white">${p.title}</h3>
+                            <p class="text-slate-500 text-[11px] mb-4">${isFree ? 'Örnek tanıtım videosu, hemen indirebilirsiniz.' : 'Yüksek çözünürlüklü özel arşiv verisi.'}</p>
                         </div>
-                        <div class="flex items-center justify-between border-t border-[#00ff66]/20 pt-4">
-                            <span class="text-xl font-black text-[#00ff66]">${p.price} ₺</span>
-                            <button onclick="addToCart('${p.title}', '${p.price}', '${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-md shadow-red-600/20">SEPETE EKLE</button>
+                        <div class="flex items-center justify-between border-t border-slate-800/80 pt-3">
+                            <span class="text-base">${priceText}</span>
+                            ${btnAction}
                         </div>
                     </div>
                 `;
             });
             lucide.createIcons();
+        }
+
+        function claimFree(title) {
+            alert(`"${title}" başarıyla hesabınıza tanımlandı! İndirme paneline eklendi.`);
+            let downloads = document.getElementById('downloads-section');
+            downloads.classList.remove('hidden');
+            let container = document.getElementById('user-downloads');
+            container.innerHTML += `<a href="#" onclick="alert('Demo video indiriliyor...')" class="flex items-center justify-between bg-slate-950 hover:bg-slate-900 border border-emerald-500/30 p-3 rounded-xl transition text-xs font-bold text-white group"><span>🎁 ${title} (Örnek)</span><span class="text-emerald-400 group-hover:underline">İndir</span></a>`;
         }
 
         async function handleAuth() {
@@ -254,12 +262,12 @@
 
             if(isRegister) {
                 if(db.users.some(u => u.username === username)) {
-                    alert("Bu kullanıcı kodu zaten sistemde kayıtlı!");
+                    alert("Bu kullanıcı adı zaten alınmış!");
                     return;
                 }
                 db.users.push({ username, password: pass });
                 await saveDatabase(db);
-                alert("Kayıt oluşturuldu! Şimdi giriş yapabilirsiniz.");
+                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
                 switchAuthMode();
             } else {
                 let user = db.users.find(u => u.username === username && u.password === pass);
@@ -269,7 +277,7 @@
                     checkSession();
                     location.reload();
                 } else {
-                    alert("Yetkisiz erişim! Kullanıcı kodu veya şifre hatalı.");
+                    alert("Kullanıcı adı veya şifre hatalı!");
                 }
             }
         }
@@ -279,7 +287,7 @@
             const display = document.getElementById('user-display');
             if(currentUser) {
                 modal.classList.add('hidden');
-                display.innerHTML = `<span class="text-red-500">[AGENT]:</span> <strong class="text-white">${currentUser.username}</strong> | <button onclick="logout()" class="text-red-500 hover:underline ml-1 font-bold">ÇIKIŞ</button>`;
+                display.innerHTML = `<span class="text-slate-500">Üye:</span> <strong class="text-slate-200">${currentUser.username}</strong> | <button onclick="logout()" class="text-red-500 hover:underline ml-1 font-bold">Çıkış</button>`;
             } else {
                 modal.classList.remove('hidden');
             }
@@ -295,21 +303,21 @@
             let total = cart.reduce((sum, i) => sum + parseInt(i.price), 0);
             document.getElementById('cart-total').innerText = total + " ₺";
             let container = document.getElementById('cart-items');
-            container.innerHTML = cart.length ? "" : "<p class='text-slate-500 text-xs'>Sepetiniz boş.</p>";
+            container.innerHTML = cart.length ? "" : "<p class='text-slate-600 text-xs'>Sepetiniz boş.</p>";
             cart.forEach(item => {
-                container.innerHTML += `<div class="flex justify-between items-center text-xs bg-black p-3 rounded-xl border border-[#00ff66]/20 text-white"><span>${item.name}</span><span class="text-[#00ff66] font-bold">${item.price} ₺</span></div>`;
+                container.innerHTML += `<div class="flex justify-between items-center text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-white"><span>${item.name}</span><span class="text-emerald-400 font-bold">${item.price} ₺</span></div>`;
             });
         }
 
         function addToCart(name, price, id) {
             cart.push({ name, price, id });
             document.getElementById('cart-count').innerText = cart.length;
-            alert("Veri sepete eklendi.");
+            alert("Ürün sepete eklendi.");
         }
 
         async function checkout() {
             const file = document.getElementById('receipt-file').files[0];
-            if(cart.length === 0 || !file) { alert("Sepet boş veya kanıt dosyası eklenmedi!"); return; }
+            if(cart.length === 0 || !file) { alert("Sepetiniz boş veya ödeme kanıtı yüklenmedi!"); return; }
 
             let itemsText = cart.map(i => i.name).join(", ");
             let totalVal = cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺";
@@ -325,7 +333,7 @@
             });
             await saveDatabase(db);
 
-            alert("Ödeme bildirimi sisteme iletildi. Admin onayından sonra arşiv açılacaktır.");
+            alert("Ödeme bildiriminiz iletildi! Onay sonrası arşiviniz açılacaktır.");
             location.reload();
         }
 
@@ -339,7 +347,7 @@
                 let container = document.getElementById('user-downloads');
                 container.innerHTML = '';
                 myOrders.forEach(order => {
-                    container.innerHTML += `<a href="#" class="flex items-center justify-between bg-black hover:bg-slate-900 border border-[#00ff66]/30 p-4 rounded-xl transition text-xs font-bold text-white group"><span>📥 ${order.items}</span><span class="text-red-500 group-hover:underline">Şifreyi Çöz & İndir</span></a>`;
+                    container.innerHTML += `<a href="#" class="flex items-center justify-between bg-slate-950 hover:bg-slate-900 border border-slate-800 p-3 rounded-xl transition text-xs font-bold text-white group"><span>📥 ${order.items}</span><span class="text-red-500 group-hover:underline">Arşivi İndir</span></a>`;
                 });
             }
         }
