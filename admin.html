@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Yönetim Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8">
+
+    <!-- Admin Giriş Modal -->
+    <div id="admin-login-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-2xl z-50 flex items-center justify-center p-4">
+        <div class="glass w-full max-w-sm rounded-3xl p-8 text-center border border-slate-800">
+            <h3 class="text-2xl font-extrabold mb-2 text-red-500">🔒 Admin Paneli</h3>
+            <p class="text-slate-400 text-xs mb-6">Yönetici şifrenizi girin.</p>
+            <input type="password" id="admin-pass" placeholder="Şifre" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm mb-4 focus:outline-none focus:border-red-500 text-white text-center">
+            <button onclick="loginAdmin()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-600/20">Giriş Yap</button>
+        </div>
+    </div>
+
+    <!-- Admin İçerik -->
+    <div id="admin-content" class="max-w-6xl mx-auto hidden space-y-8">
+        <div class="glass rounded-2xl p-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-extrabold text-red-500">⚙️ Yönetim Paneli</h1>
+                <p class="text-slate-400 text-xs">Sistem verileri Supabase bulut veritabanından anlık çekilmektedir.</p>
+            </div>
+            <button onclick="location.reload()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition">Çıkış Yap</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Üyeler -->
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-base font-bold mb-4 flex items-center gap-2 text-blue-400">
+                    <i data-lucide="users" class="w-5 h-5"></i> Kayıtlı Üyeler (<span id="user-count">0</span>)
+                </h3>
+                <div id="users-list" class="space-y-2 max-h-96 overflow-y-auto pr-1"></div>
+            </div>
+
+            <!-- Siparişler -->
+            <div class="glass rounded-2xl p-6">
+                <h3 class="text-base font-bold mb-4 flex items-center gap-2 text-amber-400">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i> Ödeme Bildirimleri & Onay
+                </h3>
+                <div id="orders-list" class="space-y-3 max-h-96 overflow-y-auto pr-1"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const SUPABASE_URL = 'sb_publishable_3SMNN5nwYKVSM4LhwFvaWQ_ZMUmzn4E';
+        const SUPABASE_ANON_KEY = 'sb_secret_KqFeyC1kJfBGTfdV_O3b5Q_WY7g0smy';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function loginAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === "1234") { // Admin şifresi
+                document.getElementById('admin-login-modal').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                loadData();
+            } else {
+                alert("Hatalı Şifre!");
+            }
+        }
+
+        async function loadData() {
+            // Kullanıcıları Çek
+            const { data: users } = await supabaseClient.from('profiles').select('*');
+            document.getElementById('user-count').innerText = users ? users.length : 0;
+            let uList = document.getElementById('users-list');
+            uList.innerHTML = users && users.length ? "" : "<p class='text-slate-500 text-sm'>Kayıtlı üye yok.</p>";
+            users?.forEach(u => {
+                uList.innerHTML += `<div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-sm flex justify-between items-center"><span class="font-medium">👤 ${u.username}</span><span class="text-xs text-slate-500">${new Date(u.created_at).toLocaleDateString()}</span></div>`;
+            });
+
+            // Siparişleri Çek
+            const { data: orders } = await supabaseClient.from('orders').select('*');
+            let oList = document.getElementById('orders-list');
+            oList.innerHTML = orders && orders.length ? "" : "<p class='text-slate-500 text-sm'>Bekleyen bildirim yok.</p>";
+            
+            orders?.forEach(o => {
+                let badgeColor = o.status === 'Onaylandı' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                oList.innerHTML += `
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-sm space-y-2">
+                        <div class="flex justify-between items-center font-bold">
+                            <span>Müşteri: ${o.username}</span>
+                            <span class="px-2.5 py-1 rounded-full text-xs border ${badgeColor}">${o.status}</span>
+                        </div>
+                        <p class="text-slate-400 text-xs">İçerik: ${o.items} (${o.total})</p>
+                        ${o.status === 'Bekliyor' ? `<button onclick="approveOrder('${o.id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-xs transition shadow-md shadow-emerald-600/20 mt-1">Ödemeyi Onayla & Kilidi Aç</button>` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        async function approveOrder(id) {
+            const { error } = await supabaseClient.from('orders').update({ status: 'Onaylandı' }).eq('id', id);
+            if(error) { alert("Onaylanırken hata oluştu!"); return; }
+            alert("Ödeme onaylandı! Kullanıcının indirme kilidi açıldı.");
+            loadData();
+        }
+    </script>
+</body>
+</html>
