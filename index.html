@@ -3,28 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heisenberg</title>
+    <title>Heisenberg // Arşiv Paneli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Share Tech Mono', monospace; background-color: #0b0f17; color: #94a3b8; }
-        .terminal-box { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #07090e; color: #94a3b8; }
+        .glass { background: rgba(13, 17, 23, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-4px); border-color: rgba(220, 38, 38, 0.4); box-shadow: 0 10px 30px -10px rgba(220, 38, 38, 0.15); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
     </style>
 </head>
-<body class="bg-[#0b0f17] text-slate-300 min-h-screen selection:bg-red-900 selection:text-white">
+<body class="bg-[#07090e] text-slate-300 min-h-screen selection:bg-red-600 selection:text-white">
 
     <!-- Navbar -->
-    <header class="border-b border-slate-900 sticky top-0 bg-[#0b0f17]/90 backdrop-blur-md z-40">
+    <header class="border-b border-slate-900/80 sticky top-0 bg-[#07090e]/85 backdrop-blur-md z-40 transition-all">
         <div class="max-w-6xl mx-auto px-4 h-20 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <span class="text-white font-extrabold text-xl tracking-wider">Heisenberg</span>
+                <span class="text-white font-extrabold text-xl tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent cursor-pointer" onclick="changeCategory('Tümü')">Heisenberg</span>
             </div>
             
             <div class="flex items-center gap-4">
                 <div id="user-display" class="text-xs text-slate-400"></div>
-                <button onclick="toggleCart()" class="relative bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 text-slate-200">
-                    <i data-lucide="shopping-bag" class="w-4 h-4 text-slate-400"></i>
+                <button onclick="toggleCart()" class="relative bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2 text-slate-200 group">
+                    <i data-lucide="shopping-bag" class="w-4 h-4 text-slate-400 group-hover:text-red-500 transition"></i>
                     <span>Sepet</span>
                     <span id="cart-count" class="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
                 </button>
@@ -33,28 +37,31 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 py-12">
-        <div class="text-center max-w-2xl mx-auto mb-12 space-y-3">
-            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white uppercase">Güvenli Arşiv Paneli</h1>
-            <p class="text-slate-500 text-xs">Şifrelenmiş özel video setleri, örnek bedava içerikler ve veri paketleri.</p>
+    <main class="max-w-6xl mx-auto px-4 py-12 animate-fade">
+        <div class="text-center max-w-2xl mx-auto mb-10 space-y-3">
+            <h1 id="page-title" class="text-3xl md:text-4xl font-extrabold tracking-tight text-white">Güvenli Arşiv Paneli</h1>
+            <p id="page-desc" class="text-slate-500 text-xs">Şifrelenmiş özel video setleri ve kategorize edilmiş veri paketleri.</p>
         </div>
 
-        <!-- Kategori Filtreleri -->
-        <div class="flex flex-wrap justify-center gap-2 mb-12" id="category-filters">
-            <button onclick="filterCategory('Tümü')" class="cat-btn bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition">Tümü</button>
-            <button onclick="filterCategory('Ücretsiz')" class="cat-btn bg-slate-900 border border-emerald-600/40 text-emerald-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Ücretsiz Örnekler</button>
-            <button onclick="filterCategory('Özel Eğlence')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Özel Eğlence</button>
-            <button onclick="filterCategory('Gece Serisi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Gece Serisi</button>
-            <button onclick="filterCategory('Mega Paket')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Mega Paket</button>
-            <button onclick="filterCategory('Sinema & Dizi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Sinema & Dizi</button>
+        <!-- Kategoriler (Ayrı Sayfa Mantığı) -->
+        <div class="flex flex-wrap justify-center gap-2 mb-10" id="category-filters">
+            <button onclick="changeCategory('Tümü')" class="cat-btn bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20">Tümü</button>
+            <button onclick="changeCategory('Ücretsiz')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Ücretsiz Örnekler</button>
+            <button onclick="changeCategory('Özel Eğlence')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Özel Eğlence</button>
+            <button onclick="changeCategory('Gece Serisi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Gece Serisi</button>
+            <button onclick="changeCategory('Mega Paket')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Mega Paket</button>
+            <button onclick="changeCategory('Sinema & Dizi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Sinema & Dizi</button>
         </div>
 
-        <!-- Ürünler -->
-        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16"></div>
+        <!-- Ürünler Grid -->
+        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
+
+        <!-- Sayfalama (Pagination: 12 Ürün Başına 1 Sayfa) -->
+        <div id="pagination-container" class="flex justify-center items-center gap-2 mb-16"></div>
 
         <!-- İndirme Paneli -->
-        <div id="downloads-section" class="terminal-box rounded-2xl p-6 hidden border border-slate-800 mb-12">
-            <h3 class="text-sm font-bold mb-4 flex items-center gap-2 text-emerald-400">
+        <div id="downloads-section" class="glass rounded-3xl p-6 hidden border border-slate-800/80 mb-12 animate-fade">
+            <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-emerald-400">
                 <i data-lucide="check-circle-2" class="w-4 h-4"></i> Onaylanan ve Erişilebilir Arşivleriniz
             </h3>
             <div id="user-downloads" class="space-y-3"></div>
@@ -62,8 +69,8 @@
     </main>
 
     <!-- Auth Modal -->
-    <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="terminal-box w-full max-w-md rounded-2xl p-6 border border-slate-800 relative">
+    <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="glass w-full max-w-md rounded-3xl p-8 border border-slate-800 relative shadow-2xl">
             <div class="text-center mb-6">
                 <h3 id="auth-title" class="text-xl font-bold text-white">Giriş Yap</h3>
                 <p class="text-slate-500 text-xs mt-1">Devam etmek için hesabınıza giriş yapın.</p>
@@ -71,43 +78,43 @@
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Kullanıcı Adı</label>
-                    <input type="text" id="auth-username" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-red-600 text-white">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Kullanıcı Adı</label>
+                    <input type="text" id="auth-username" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-red-600 text-white transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Şifre</label>
-                    <input type="password" id="auth-pass" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-red-600 text-white">
+                    <label class="block text-xs font-semibold text-slate-400 mb-1.5">Şifre</label>
+                    <input type="password" id="auth-pass" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-red-600 text-white transition">
                 </div>
-                <button onclick="handleAuth()" id="auth-btn" class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-xl transition text-xs">Giriş Yap</button>
-                <button onclick="switchAuthMode()" id="auth-switch" class="w-full text-slate-500 text-xs hover:text-slate-300 transition text-center underline pt-1">Hesabın yok mu? Kayıt ol</button>
+                <button onclick="handleAuth()" id="auth-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20">Giriş Yap</button>
+                <button onclick="switchAuthMode()" id="auth-switch" class="w-full text-slate-500 text-xs hover:text-slate-300 transition text-center underline pt-2">Hesabın yok mu? Kayıt ol</button>
             </div>
         </div>
     </div>
 
     <!-- Sepet Modal -->
-    <div id="cart-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="terminal-box w-full max-w-lg rounded-2xl p-6 border border-slate-800 relative max-h-[90vh] overflow-y-auto">
-            <button onclick="toggleCart()" class="absolute top-5 right-5 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
-            <h3 class="text-lg font-bold mb-4 text-white">Sepetiniz & Ödeme</h3>
+    <div id="cart-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="glass w-full max-w-lg rounded-3xl p-8 border border-slate-800 relative max-h-[90vh] overflow-y-auto shadow-2xl">
+            <button onclick="toggleCart()" class="absolute top-6 right-6 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+            <h3 class="text-xl font-bold mb-6 text-white">Sepetiniz & Ödeme</h3>
             
-            <div id="cart-items" class="space-y-2 mb-4 max-h-36 overflow-y-auto"></div>
+            <div id="cart-items" class="space-y-2 mb-6 max-h-40 overflow-y-auto"></div>
             
-            <div class="border-t border-slate-800 pt-3 mb-4 flex justify-between font-bold text-sm text-white">
+            <div class="border-t border-slate-800/80 pt-4 mb-6 flex justify-between font-bold text-sm text-white">
                 <span>Toplam Tutar:</span>
                 <span id="cart-total" class="text-emerald-400">0 ₺</span>
             </div>
 
-            <div class="space-y-3 mb-4">
-                <p class="text-xs font-bold text-slate-400 flex items-center gap-1.5"><i data-lucide="wallet" class="w-3.5 h-3.5"></i> Ödeme Yapılabilecek Aktif Hesaplar:</p>
+            <div class="space-y-3 mb-6">
+                <p class="text-xs font-bold text-slate-400 flex items-center gap-1.5"><i data-lucide="wallet" class="w-4 h-4"></i> Ödeme Yapılabilecek Aktif Hesaplar:</p>
                 <div id="payment-accounts-list" class="space-y-2"></div>
             </div>
 
-            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 mb-4 text-xs">
+            <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 mb-6 text-xs">
                 <label class="block text-slate-400 mb-1 font-medium">Ödeme Dekontu Görseli:</label>
-                <input type="file" id="receipt-file" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-700 file:text-white cursor-pointer">
+                <input type="file" id="receipt-file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white cursor-pointer transition">
             </div>
 
-            <button onclick="checkout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition text-xs">Ödemeyi Bildir & Sipariş Oluştur</button>
+            <button onclick="checkout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-emerald-600/20">Ödemeyi Bildir & Sipariş Oluştur</button>
         </div>
     </div>
 
@@ -121,7 +128,9 @@
         let currentUser = JSON.parse(localStorage.getItem('heisenberg_user')) || null;
         let cart = [];
         let allProducts = [];
-        let currentFilter = 'Tümü';
+        let currentCategory = 'Tümü';
+        let currentPage = 1;
+        const itemsPerPage = 12; // 12 ürünü geçince 2. sayfa açılır
 
         window.onload = function() {
             checkSession();
@@ -164,6 +173,7 @@
             allProducts = db.products || [];
             
             if(allProducts.length === 0) {
+                // Test için örnek ürünler ekleyelim ki sayfalama testi yapılabilsin
                 allProducts = [
                     { id: 'p0', title: 'Ücretsiz Örnek Demo Video', category: 'Ücretsiz', price: '0', image: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500' },
                     { id: 'p1', title: 'Özel Eğlence Vol. 1', category: 'Özel Eğlence', price: '150', image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500' },
@@ -179,7 +189,7 @@
             let container = document.getElementById('payment-accounts-list');
             if(!accounts || accounts.length === 0) {
                 container.innerHTML = `
-                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] text-slate-300 font-mono">
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 font-mono">
                         TR00 0000 0000 0000 0000 0000 00 (Varsayılan IBAN - Muhsin B.)
                     </div>
                 `;
@@ -189,7 +199,7 @@
             accounts.forEach(acc => {
                 let icon = acc.type === 'Kripto' ? '🪙' : '🏦';
                 container.innerHTML += `
-                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[11px] space-y-0.5">
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
                         <div class="font-bold text-slate-200">${icon} ${acc.name} (${acc.type})</div>
                         <div class="font-mono text-slate-400 select-all">${acc.detail}</div>
                     </div>
@@ -197,13 +207,18 @@
             });
         }
 
-        function filterCategory(cat) {
-            currentFilter = cat;
+        function changeCategory(cat) {
+            currentCategory = cat;
+            currentPage = 1; // Kategori değişince 1. sayfadan başla
+            
+            // Başlıkları güncelle
+            document.getElementById('page-title').innerText = cat === 'Tümü' ? 'Güvenli Arşiv Paneli' : cat + ' Arşivleri';
+            
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                if(btn.innerText.includes(cat)) {
-                    btn.className = "cat-btn bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition";
+                if(btn.innerText.includes(cat) || (cat === 'Tümü' && btn.innerText === 'Tümü')) {
+                    btn.className = "cat-btn bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20";
                 } else {
-                    btn.className = "cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition";
+                    btn.className = "cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition";
                 }
             });
             renderProducts();
@@ -213,36 +228,64 @@
             let grid = document.getElementById('products-grid');
             grid.innerHTML = '';
             
-            let filtered = currentFilter === 'Tümü' ? allProducts : allProducts.filter(p => p.category === currentFilter);
+            let filtered = currentCategory === 'Tümü' ? allProducts : allProducts.filter(p => p.category === currentCategory);
             
-            if(filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-3 text-center py-12 text-slate-600 text-xs">Bu kategoride henüz arşiv bulunmuyor.</div>`;
+            // Sayfalama Hesaplamaları (12 ürün başı 1 sayfa)
+            let totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            if(currentPage > totalPages) currentPage = totalPages;
+            
+            let start = (currentPage - 1) * itemsPerPage;
+            let paginatedItems = filtered.slice(start, start + itemsPerPage);
+            
+            if(paginatedItems.length === 0) {
+                grid.innerHTML = `<div class="col-span-3 text-center py-16 text-slate-500 text-xs">Bu kategori sayfasında henüz arşiv bulunmuyor.</div>`;
+                document.getElementById('pagination-container').innerHTML = '';
                 return;
             }
 
-            filtered.forEach(p => {
+            paginatedItems.forEach(p => {
                 let isFree = p.price === '0' || p.price === 0;
-                let priceText = isFree ? '<span class="text-emerald-400 font-black">Ücretsiz</span>' : `<span class="text-emerald-400 font-black">${p.price} ₺</span>`;
-                let btnAction = isFree ? `<button onclick="claimFree('${p.title}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition">Hemen İndir</button>` : `<button onclick="addToCart('${p.title}', '${p.price}', '${p.id}')" class="bg-red-700 hover:bg-red-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition">Sepete Ekle</button>`;
+                let priceText = isFree ? '<span class="text-emerald-400 font-bold">Ücretsiz</span>' : `<span class="text-emerald-400 font-bold">${p.price} ₺</span>`;
+                let btnAction = isFree ? `<button onclick="claimFree('${p.title}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-emerald-600/20">Hemen İndir</button>` : `<button onclick="addToCart('${p.title}', '${p.price}', '${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-red-600/20">Sepete Ekle</button>`;
 
                 grid.innerHTML += `
-                    <div class="terminal-box rounded-2xl p-5 flex flex-col justify-between border border-slate-800/80 hover:border-slate-700 transition duration-300">
+                    <div class="glass rounded-3xl p-5 flex flex-col justify-between card-hover animate-fade">
                         <div>
-                            <div class="aspect-video bg-slate-950 rounded-xl overflow-hidden relative mb-4 border border-slate-800 flex items-center justify-center">
-                                <img src="${p.image}" class="w-full h-full object-cover opacity-80">
-                                <span class="absolute top-2 left-2 bg-slate-950/90 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isFree ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 border-slate-800'} border">${p.category}</span>
+                            <div class="aspect-video bg-slate-950 rounded-2xl overflow-hidden relative mb-4 border border-slate-800/80 flex items-center justify-center">
+                                <img src="${p.image}" class="w-full h-full object-cover opacity-85">
+                                <span class="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold ${isFree ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 border-slate-800'} border">${p.category}</span>
                             </div>
                             <h3 class="font-bold text-sm mb-1 text-white">${p.title}</h3>
-                            <p class="text-slate-500 text-[11px] mb-4">${isFree ? 'Örnek tanıtım videosu, hemen indirebilirsiniz.' : 'Yüksek çözünürlüklü özel arşiv verisi.'}</p>
+                            <p class="text-slate-500 text-[11px] mb-4">${isFree ? 'Örnek tanıtım içeriği, anında erişim.' : 'Yüksek çözünürlüklü özel şifreli arşiv.'}</p>
                         </div>
-                        <div class="flex items-center justify-between border-t border-slate-800/80 pt-3">
+                        <div class="flex items-center justify-between border-t border-slate-800/80 pt-4">
                             <span class="text-base">${priceText}</span>
                             ${btnAction}
                         </div>
                     </div>
                 `;
             });
+
+            // Sayfalama Butonlarını Oluştur (12, 24 ürün sınırlarına göre 2. ve 3. sayfa geçişleri)
+            renderPagination(totalPages);
             lucide.createIcons();
+        }
+
+        function renderPagination(totalPages) {
+            let pContainer = document.getElementById('pagination-container');
+            pContainer.innerHTML = '';
+            if(totalPages <= 1) return;
+
+            for(let i = 1; i <= totalPages; i++) {
+                let activeClass = i === currentPage ? 'bg-red-600 text-white font-bold shadow-lg shadow-red-600/20' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white';
+                pContainer.innerHTML += `<button onclick="goToPage(${i})" class="px-3.5 py-2 rounded-xl text-xs transition ${activeClass}">${i}</button>`;
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderProducts();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function claimFree(title) {
@@ -250,7 +293,7 @@
             let downloads = document.getElementById('downloads-section');
             downloads.classList.remove('hidden');
             let container = document.getElementById('user-downloads');
-            container.innerHTML += `<a href="#" onclick="alert('Demo video indiriliyor...')" class="flex items-center justify-between bg-slate-950 hover:bg-slate-900 border border-emerald-500/30 p-3 rounded-xl transition text-xs font-bold text-white group"><span>🎁 ${title} (Örnek)</span><span class="text-emerald-400 group-hover:underline">İndir</span></a>`;
+            container.innerHTML += `<a href="#" onclick="alert('Demo video indiriliyor...')" class="flex items-center justify-between bg-slate-900 hover:bg-slate-800/80 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group"><span>🎁 ${title} (Örnek)</span><span class="text-emerald-400 group-hover:underline">İndir</span></a>`;
         }
 
         async function handleAuth() {
@@ -303,9 +346,9 @@
             let total = cart.reduce((sum, i) => sum + parseInt(i.price), 0);
             document.getElementById('cart-total').innerText = total + " ₺";
             let container = document.getElementById('cart-items');
-            container.innerHTML = cart.length ? "" : "<p class='text-slate-600 text-xs'>Sepetiniz boş.</p>";
+            container.innerHTML = cart.length ? "" : "<p class='text-slate-600 text-xs py-4 text-center'>Sepetiniz boş.</p>";
             cart.forEach(item => {
-                container.innerHTML += `<div class="flex justify-between items-center text-xs bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-white"><span>${item.name}</span><span class="text-emerald-400 font-bold">${item.price} ₺</span></div>`;
+                container.innerHTML += `<div class="flex justify-between items-center text-xs bg-slate-900 p-3 rounded-xl border border-slate-800 text-white"><span>${item.name}</span><span class="text-emerald-400 font-bold">${item.price} ₺</span></div>`;
             });
         }
 
@@ -345,9 +388,8 @@
             if(myOrders.length > 0) {
                 document.getElementById('downloads-section').classList.remove('hidden');
                 let container = document.getElementById('user-downloads');
-                container.innerHTML = '';
                 myOrders.forEach(order => {
-                    container.innerHTML += `<a href="#" class="flex items-center justify-between bg-slate-950 hover:bg-slate-900 border border-slate-800 p-3 rounded-xl transition text-xs font-bold text-white group"><span>📥 ${order.items}</span><span class="text-red-500 group-hover:underline">Arşivi İndir</span></a>`;
+                    container.innerHTML += `<a href="#" class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group"><span>📥 ${order.items}</span><span class="text-red-500 group-hover:underline">Arşivi İndir</span></a>`;
                 });
             }
         }
