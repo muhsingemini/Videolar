@@ -58,7 +58,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">150 ₺</span>
-                    <button onclick="addToCart('Özel Eğlence Vol. 1', '150', 'video1')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Özel Eğlence Vol. 1', 150, 'video1')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
 
@@ -72,7 +72,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">250 ₺</span>
-                    <button onclick="addToCart('Gece Serisi Özel Set', '250', 'video2')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Gece Serisi Özel Set', 250, 'video2')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
 
@@ -86,7 +86,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">400 ₺</span>
-                    <button onclick="addToCart('Mega Paket (Hepsi)', '400', 'video3')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Mega Paket (Hepsi)', 400, 'video3')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
         </div>
@@ -154,9 +154,6 @@
     <script>
         lucide.createIcons();
 
-        const SUPABASE_URL = 'https://smecqlefagohyatzgso.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_3SMNN5nwYKVSM4LhwFvaWQ_ZMUmzn4E';
-
         let isRegister = false;
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
         let cart = [];
@@ -173,60 +170,32 @@
             document.getElementById('auth-switch').innerText = isRegister ? "Zaten hesabın var mı? Giriş yap" : "Hesabın yok mu? Kayıt ol";
         }
 
-        async function handleAuth() {
+        function handleAuth() {
             const username = document.getElementById('auth-username').value.trim();
             const pass = document.getElementById('auth-pass').value.trim();
             if(!username || !pass) { alert("Lütfen tüm alanları doldurun!"); return; }
 
+            let users = JSON.parse(localStorage.getItem('site_users')) || [];
+
             if(isRegister) {
-                try {
-                    let response = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPabaseKeyOrToken()}`,
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({ username: username, password: pass })
-                    });
-
-                    if(response.ok) {
-                        alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
-                        switchAuthMode();
-                    } else {
-                        let err = await response.text();
-                        alert("Kayıt olunamadı. Bu kullanıcı adı alınmış olabilir.");
-                    }
-                } catch(e) {
-                    alert("Bağlantı hatası: " + e.message);
+                if(users.some(u => u.username === username)) {
+                    alert("Bu kullanıcı adı zaten alınmış!");
+                    return;
                 }
+                users.push({ username, password: pass });
+                localStorage.setItem('site_users', JSON.stringify(users));
+                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                switchAuthMode();
             } else {
-                try {
-                    let response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(pass)}&select=*`, {
-                        method: 'GET',
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPabaseKeyOrToken()}`
-                        }
-                    });
-
-                    let data = await response.json();
-                    if(data && data.length > 0) {
-                        currentUser = data[0];
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                        checkSession();
-                    } else {
-                        alert("Kullanıcı adı veya şifre hatalı!");
-                    }
-                } catch(e) {
-                    alert("Giriş hatası: " + e.message);
+                let user = users.find(u => u.username === username && u.password === pass);
+                if(user) {
+                    currentUser = user;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    checkSession();
+                } else {
+                    alert("Kullanıcı adı veya şifre hatalı!");
                 }
             }
-        }
-
-        function SUPabaseKeyOrToken() {
-            return SUPABASE_KEY;
         }
 
         function checkSession() {
@@ -255,63 +224,39 @@
             alert("Ürün sepete eklendi!");
         }
 
-        async function checkout() {
+        function checkout() {
             const file = document.getElementById('receipt-file').files[0];
             if(cart.length === 0 || !file) { alert("Sepetiniz boş veya dekont yüklenmedi!"); return; }
 
             let itemsText = cart.map(i => i.name).join(", ");
-            let totalVal = cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺";
+            let totalVal = cart.reduce((sum, i) => sum + i.price, 0) + " ₺";
 
-            try {
-                let response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        username: currentUser.username,
-                        items: itemsText,
-                        total: totalVal,
-                        status: 'Bekliyor'
-                    })
-                });
+            let orders = JSON.parse(localStorage.getItem('site_orders')) || [];
+            orders.push({
+                id: 'ord_' + Date.now(),
+                username: currentUser.username,
+                items: itemsText,
+                total: totalVal,
+                status: 'Bekliyor'
+            });
+            localStorage.setItem('site_orders', JSON.stringify(orders));
 
-                if(response.ok) {
-                    alert("Ödeme bildiriminiz başarıyla iletildi! Admin onayından sonra kilit açılacaktır.");
-                    location.reload();
-                } else {
-                    alert("Sipariş oluşturulamadı!");
-                }
-            } catch(e) {
-                alert("Hata: " + e.message);
-            }
+            alert("Ödeme bildiriminiz başarıyla iletildi! Admin onayından sonra kilit açılacaktır.");
+            location.reload();
         }
 
-        async function checkUserDownloads() {
+        function checkUserDownloads() {
             if(!currentUser) return;
-            try {
-                let response = await fetch(`${SUPABASE_URL}/rest/v1/orders?username=eq.${encodeURIComponent(currentUser.username)}&status=eq.Onaylandı&select=*`, {
-                    method: 'GET',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    }
+            let orders = JSON.parse(localStorage.getItem('site_orders')) || [];
+            let myOrders = orders.filter(o => o.username === currentUser.username && o.status === 'Onaylandı');
+            
+            if(myOrders.length > 0) {
+                document.getElementById('downloads-section').classList.remove('hidden');
+                let container = document.getElementById('user-downloads');
+                container.innerHTML = '';
+                myOrders.forEach(order => {
+                    container.innerHTML += `<a href="videolar/${order.id}.mp4" download class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl transition text-sm font-bold text-white group"><span>📥 ${order.items}</span><span class="text-xs text-red-500 group-hover:underline">İndir</span></a>`;
                 });
-                let orders = await response.json();
-                
-                if(orders && orders.length > 0) {
-                    document.getElementById('downloads-section').classList.remove('hidden');
-                    let container = document.getElementById('user-downloads');
-                    container.innerHTML = '';
-                    orders.forEach(order => {
-                        container.innerHTML += `<a href="videolar/${order.id}.mp4" download class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl transition text-sm font-bold text-white group"><span>📥 ${order.items}</span><span class="text-xs text-red-500 group-hover:underline">İndir</span></a>`;
-                    });
-                }
-            } catch(e) {
-                console.error(e);
             }
         }
     </script>

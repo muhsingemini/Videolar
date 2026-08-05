@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Yönetim Paneli</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -30,7 +29,7 @@
         <div class="glass rounded-2xl p-6 flex justify-between items-center">
             <div>
                 <h1 class="text-xl font-extrabold text-red-500">⚙️ Yönetim Paneli</h1>
-                <p class="text-slate-400 text-xs">Sistem verileri Supabase bulut veritabanından anlık çekilmektedir.</p>
+                <p class="text-slate-400 text-xs">Sistem verileri güvenli şekilde yönetilmektedir.</p>
             </div>
             <button onclick="location.reload()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition">Çıkış Yap</button>
         </div>
@@ -57,10 +56,6 @@
     <script>
         lucide.createIcons();
 
-        const SUPABASE_URL = 'https://smecqlefagohyatzgso.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_3SMNN5nwYKVSM4LhwFvaWQ_ZMUmzn4E';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         function loginAdmin() {
             const pass = document.getElementById('admin-pass').value;
             if(pass === "1234") { // Admin şifresi
@@ -72,22 +67,20 @@
             }
         }
 
-        async function loadData() {
-            // Kullanıcıları Çek
-            const { data: users } = await supabaseClient.from('profiles').select('*');
-            document.getElementById('user-count').innerText = users ? users.length : 0;
+        function loadData() {
+            let users = JSON.parse(localStorage.getItem('site_users')) || [];
+            document.getElementById('user-count').innerText = users.length;
             let uList = document.getElementById('users-list');
-            uList.innerHTML = users && users.length ? "" : "<p class='text-slate-500 text-sm'>Kayıtlı üye yok.</p>";
-            users?.forEach(u => {
-                uList.innerHTML += `<div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-sm flex justify-between items-center"><span class="font-medium">👤 ${u.username}</span><span class="text-xs text-slate-500">${new Date(u.created_at).toLocaleDateString()}</span></div>`;
+            uList.innerHTML = users.length ? "" : "<p class='text-slate-500 text-sm'>Kayıtlı üye yok.</p>";
+            users.forEach(u => {
+                uList.innerHTML += `<div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-sm flex justify-between items-center"><span class="font-medium">👤 ${u.username}</span></div>`;
             });
 
-            // Siparişleri Çek
-            const { data: orders } = await supabaseClient.from('orders').select('*');
+            let orders = JSON.parse(localStorage.getItem('site_orders')) || [];
             let oList = document.getElementById('orders-list');
-            oList.innerHTML = orders && orders.length ? "" : "<p class='text-slate-500 text-sm'>Bekleyen bildirim yok.</p>";
+            oList.innerHTML = orders.length ? "" : "<p class='text-slate-500 text-sm'>Bekleyen bildirim yok.</p>";
             
-            orders?.forEach(o => {
+            orders.forEach((o, index) => {
                 let badgeColor = o.status === 'Onaylandı' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
                 oList.innerHTML += `
                     <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-sm space-y-2">
@@ -96,15 +89,16 @@
                             <span class="px-2.5 py-1 rounded-full text-xs border ${badgeColor}">${o.status}</span>
                         </div>
                         <p class="text-slate-400 text-xs">İçerik: ${o.items} (${o.total})</p>
-                        ${o.status === 'Bekliyor' ? `<button onclick="approveOrder('${o.id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-xs transition shadow-md shadow-emerald-600/20 mt-1">Ödemeyi Onayla & Kilidi Aç</button>` : ''}
+                        ${o.status === 'Bekliyor' ? `<button onclick="approveOrder(${index})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg text-xs transition shadow-md shadow-emerald-600/20 mt-1">Ödemeyi Onayla & Kilidi Aç</button>` : ''}
                     </div>
                 `;
             });
         }
 
-        async function approveOrder(id) {
-            const { error } = await supabaseClient.from('orders').update({ status: 'Onaylandı' }).eq('id', id);
-            if(error) { alert("Onaylanırken hata oluştu!"); return; }
+        function approveOrder(index) {
+            let orders = JSON.parse(localStorage.getItem('site_orders')) || [];
+            orders[index].status = 'Onaylandı';
+            localStorage.setItem('site_orders', JSON.stringify(orders));
             alert("Ödeme onaylandı! Kullanıcının indirme kilidi açıldı.");
             loadData();
         }
