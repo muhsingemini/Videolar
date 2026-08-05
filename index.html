@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Özel Arşiv & Medya Platformu</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -44,7 +43,7 @@
                 <span class="w-2 h-2 rounded-full bg-red-500"></span> Bulut Veritabanı Aktif
             </div>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">Özel Eğlence & Uzun Soluklu <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-400">Özel Arşiv</span></h1>
-            <p class="text-slate-400 text-base">Güvenli bulut altyapısı, anında onay sistemi ve kesintisiz içerikler.</p>
+            <p class="text-slate-400 text-base">Güvenli altyapı, anında onay sistemi ve kesintisiz içerikler.</p>
         </div>
 
         <!-- Ürünler -->
@@ -59,7 +58,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">150 ₺</span>
-                    <button onclick="addToCart('Özel Eğlence Vol. 1', '150', 'video1')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Özel Eğlence Vol. 1', 150, 'video1')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
 
@@ -73,7 +72,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">250 ₺</span>
-                    <button onclick="addToCart('Gece Serisi Özel Set', '250', 'video2')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Gece Serisi Özel Set', 250, 'video2')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
 
@@ -87,7 +86,7 @@
                 </div>
                 <div class="flex items-center justify-between border-t border-slate-800/60 pt-4">
                     <span class="text-2xl font-black text-emerald-400">400 ₺</span>
-                    <button onclick="addToCart('Mega Paket (Hepsi)', '400', 'video3')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
+                    <button onclick="addToCart('Mega Paket (Hepsi)', 400, 'video3')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-red-600/20">Sepete Ekle</button>
                 </div>
             </div>
         </div>
@@ -155,9 +154,9 @@
     <script>
         lucide.createIcons();
 
-        const SUPABASE_URL = 'https://smecqlefagohyatzgso.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_3SMNN5nwYKVSM4LhwFvaWQ_ZMUmzn4E';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // JSONBin.io Bilgilerini Buraya Yazacaksın:
+        const BIN_ID = '6a73c66cf5f4af5e29f07574';
+        const MASTER_KEY = '$2a$10$zh2aEsam0mcpeFIrGF40pekMKtzirnqXSEFm27I6NOa1SGFR9bkG.';
 
         let isRegister = false;
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
@@ -175,29 +174,49 @@
             document.getElementById('auth-switch').innerText = isRegister ? "Zaten hesabın var mı? Giriş yap" : "Hesabın yok mu? Kayıt ol";
         }
 
+        async function getDatabase() {
+            try {
+                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': MASTER_KEY }
+                });
+                let json = await res.json();
+                return json.record || { users: [], orders: [] };
+            } catch(e) {
+                return { users: [], orders: [] };
+            }
+        }
+
+        async function saveDatabase(data) {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': MASTER_KEY
+                },
+                body: JSON.stringify(data)
+            });
+        }
+
         async function handleAuth() {
             const username = document.getElementById('auth-username').value.trim();
             const pass = document.getElementById('auth-pass').value.trim();
             if(!username || !pass) { alert("Lütfen tüm alanları doldurun!"); return; }
 
+            let db = await getDatabase();
+
             if(isRegister) {
-                const { error } = await supabaseClient.from('profiles').insert([{ username: username, password: pass }]);
-                if(error) {
-                    alert("Kayıt hatası: " + error.message);
+                if(db.users.some(u => u.username === username)) {
+                    alert("Bu kullanıcı adı zaten alınmış!");
                     return;
                 }
+                db.users.push({ username, password: pass });
+                await saveDatabase(db);
                 alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
                 switchAuthMode();
             } else {
-                const { data, error } = await supabaseClient.from('profiles').select('*').eq('username', username).eq('password', pass);
-                
-                if(error) {
-                    alert("Giriş hatası: " + error.message);
-                    return;
-                }
-
-                if(data && data.length > 0) {
-                    currentUser = data[0];
+                let user = db.users.find(u => u.username === username && u.password === pass);
+                if(user) {
+                    currentUser = user;
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     checkSession();
                     location.reload();
@@ -238,33 +257,32 @@
             if(cart.length === 0 || !file) { alert("Sepetiniz boş veya dekont yüklenmedi!"); return; }
 
             let itemsText = cart.map(i => i.name).join(", ");
-            let totalVal = cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺";
+            let totalVal = cart.reduce((sum, i) => sum + i.price, 0) + " ₺";
 
-            const { error } = await supabaseClient.from('orders').insert([{
+            let db = await getDatabase();
+            db.orders.push({
+                id: 'ord_' + Date.now(),
                 username: currentUser.username,
                 items: itemsText,
                 total: totalVal,
                 status: 'Bekliyor'
-            }]);
+            });
+            await saveDatabase(db);
 
-            if(error) {
-                alert("Sipariş verilemedi: " + error.message);
-                return;
-            }
-
-            alert("Ödeme bildiriminiz başarıyla buluta iletildi! Admin onayından sonra kilit açılacaktır.");
+            alert("Ödeme bildiriminiz buluta başarıyla iletildi! Admin onayından sonra kilit açılacaktır.");
             location.reload();
         }
 
         async function checkUserDownloads() {
             if(!currentUser) return;
-            const { data: orders } = await supabaseClient.from('orders').select('*').eq('username', currentUser.username).eq('status', 'Onaylandı');
+            let db = await getDatabase();
+            let myOrders = db.orders.filter(o => o.username === currentUser.username && o.status === 'Onaylandı');
             
-            if(orders && orders.length > 0) {
+            if(myOrders.length > 0) {
                 document.getElementById('downloads-section').classList.remove('hidden');
                 let container = document.getElementById('user-downloads');
                 container.innerHTML = '';
-                orders.forEach(order => {
+                myOrders.forEach(order => {
                     container.innerHTML += `<a href="videolar/${order.id}.mp4" download class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl transition text-sm font-bold text-white group"><span>📥 ${order.items}</span><span class="text-xs text-red-500 group-hover:underline">İndir</span></a>`;
                 });
             }
