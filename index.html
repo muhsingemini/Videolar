@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Özel Arşiv & Medya Platformu</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -156,8 +155,7 @@
         lucide.createIcons();
 
         const SUPABASE_URL = 'https://smecqlefagohyatzgso.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_3SMNN5nwYKVSM4LhwFvaWQ_ZMUmzn4E';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_KEY = 'sb_publishable_3SMNN5nwYKVSM4LhwFvaWQ_ZMUmzn4E';
 
         let isRegister = false;
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
@@ -181,23 +179,54 @@
             if(!username || !pass) { alert("Lütfen tüm alanları doldurun!"); return; }
 
             if(isRegister) {
-                const { data, error } = await supabaseClient.from('profiles').insert([{ username, password: pass }]);
-                if(error) { 
-                    alert("Kayıt Hatası: " + error.message); 
-                    return; 
+                try {
+                    let response = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPabaseKeyOrToken()}`,
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({ username: username, password: pass })
+                    });
+
+                    if(response.ok) {
+                        alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                        switchAuthMode();
+                    } else {
+                        let err = await response.text();
+                        alert("Kayıt olunamadı. Bu kullanıcı adı alınmış olabilir.");
+                    }
+                } catch(e) {
+                    alert("Bağlantı hatası: " + e.message);
                 }
-                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
-                switchAuthMode();
             } else {
-                const { data, error } = await supabaseClient.from('profiles').select('*').eq('username', username).eq('password', pass).single();
-                if(data) {
-                    currentUser = data;
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    checkSession();
-                } else {
-                    alert("Kullanıcı adı veya şifre hatalı!");
+                try {
+                    let response = await fetch(`${SUPABASE_URL}/rest/v1/profiles?username=eq.${encodeURIComponent(username)}&password=eq.${encodeURIComponent(pass)}&select=*`, {
+                        method: 'GET',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPabaseKeyOrToken()}`
+                        }
+                    });
+
+                    let data = await response.json();
+                    if(data && data.length > 0) {
+                        currentUser = data[0];
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        checkSession();
+                    } else {
+                        alert("Kullanıcı adı veya şifre hatalı!");
+                    }
+                } catch(e) {
+                    alert("Giriş hatası: " + e.message);
                 }
             }
+        }
+
+        function SUPabaseKeyOrToken() {
+            return SUPABASE_KEY;
         }
 
         function checkSession() {
@@ -233,30 +262,56 @@
             let itemsText = cart.map(i => i.name).join(", ");
             let totalVal = cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺";
 
-            const { error } = await supabaseClient.from('orders').insert([{
-                username: currentUser.username,
-                items: itemsText,
-                total: totalVal,
-                status: 'Bekliyor'
-            }]);
+            try {
+                let response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        items: itemsText,
+                        total: totalVal,
+                        status: 'Bekliyor'
+                    })
+                });
 
-            if(error) { alert("Sipariş oluşturulamadı: " + error.message); return; }
-
-            alert("Ödeme bildiriminiz başarıyla iletildi! Admin onayından sonra kilit açılacaktır.");
-            location.reload();
+                if(response.ok) {
+                    alert("Ödeme bildiriminiz başarıyla iletildi! Admin onayından sonra kilit açılacaktır.");
+                    location.reload();
+                } else {
+                    alert("Sipariş oluşturulamadı!");
+                }
+            } catch(e) {
+                alert("Hata: " + e.message);
+            }
         }
 
         async function checkUserDownloads() {
             if(!currentUser) return;
-            const { data: orders } = await supabaseClient.from('orders').select('*').eq('username', currentUser.username).eq('status', 'Onaylandı');
-            
-            if(orders && orders.length > 0) {
-                document.getElementById('downloads-section').classList.remove('hidden');
-                let container = document.getElementById('user-downloads');
-                container.innerHTML = '';
-                orders.forEach(order => {
-                    container.innerHTML += `<a href="videolar/${order.id}.mp4" download class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl transition text-sm font-bold text-white group"><span>📥 ${order.items}</span><span class="text-xs text-red-500 group-hover:underline">İndir</span></a>`;
+            try {
+                let response = await fetch(`${SUPABASE_URL}/rest/v1/orders?username=eq.${encodeURIComponent(currentUser.username)}&status=eq.Onaylandı&select=*`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
                 });
+                let orders = await response.json();
+                
+                if(orders && orders.length > 0) {
+                    document.getElementById('downloads-section').classList.remove('hidden');
+                    let container = document.getElementById('user-downloads');
+                    container.innerHTML = '';
+                    orders.forEach(order => {
+                        container.innerHTML += `<a href="videolar/${order.id}.mp4" download class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-xl transition text-sm font-bold text-white group"><span>📥 ${order.items}</span><span class="text-xs text-red-500 group-hover:underline">İndir</span></a>`;
+                    });
+                }
+            } catch(e) {
+                console.error(e);
             }
         }
     </script>
