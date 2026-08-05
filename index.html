@@ -49,11 +49,9 @@
 
         <!-- Ürünler -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <!-- Ürün 1 -->
             <div class="glass rounded-2xl p-5 flex flex-col justify-between hover:border-red-500/30 transition duration-300 group">
                 <div>
                     <div class="aspect-video bg-slate-900 rounded-xl overflow-hidden relative mb-4 border border-slate-800 flex items-center justify-center">
-                        <div class="absolute inset-0 bg-gradient-to-tr from-red-600/20 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
                         <i data-lucide="video" class="w-10 h-10 text-slate-600 group-hover:text-red-500 transition"></i>
                     </div>
                     <h3 class="font-bold text-lg mb-1">Özel Eğlence Vol. 1</h3>
@@ -65,11 +63,9 @@
                 </div>
             </div>
 
-            <!-- Ürün 2 -->
             <div class="glass rounded-2xl p-5 flex flex-col justify-between hover:border-red-500/30 transition duration-300 group">
                 <div>
                     <div class="aspect-video bg-slate-900 rounded-xl overflow-hidden relative mb-4 border border-slate-800 flex items-center justify-center">
-                        <div class="absolute inset-0 bg-gradient-to-tr from-red-600/20 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
                         <i data-lucide="video" class="w-10 h-10 text-slate-600 group-hover:text-red-500 transition"></i>
                     </div>
                     <h3 class="font-bold text-lg mb-1">Gece Serisi Özel Set</h3>
@@ -81,11 +77,9 @@
                 </div>
             </div>
 
-            <!-- Ürün 3 -->
             <div class="glass rounded-2xl p-5 flex flex-col justify-between hover:border-red-500/30 transition duration-300 group">
                 <div>
                     <div class="aspect-video bg-slate-900 rounded-xl overflow-hidden relative mb-4 border border-slate-800 flex items-center justify-center">
-                        <div class="absolute inset-0 bg-gradient-to-tr from-red-600/20 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
                         <i data-lucide="sparkles" class="w-10 h-10 text-slate-600 group-hover:text-red-500 transition"></i>
                     </div>
                     <h3 class="font-bold text-lg mb-1">Mega Paket (Hepsi)</h3>
@@ -98,7 +92,7 @@
             </div>
         </div>
 
-        <!-- Satın Alınanlar / İndirme Paneli -->
+        <!-- İndirme Paneli -->
         <div id="downloads-section" class="glass rounded-2xl p-6 hidden">
             <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-emerald-400">
                 <i data-lucide="check-circle-2" class="w-6 h-6"></i> Onaylanan Arşivlerim & İndirme Bağlantıları
@@ -107,7 +101,7 @@
         </div>
     </main>
 
-    <!-- Auth Modal (Giriş / Kayıt) -->
+    <!-- Auth Modal -->
     <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md rounded-3xl p-8 border border-slate-800 shadow-2xl relative">
             <div class="text-center mb-6">
@@ -161,9 +155,8 @@
     <script>
         lucide.createIcons();
 
-        // SUPABASE BAĞLANTI BİLGİLERİNİ BURAYA YAZACAKSIN
         const SUPABASE_URL = 'https://smecqlefagohyatzgso.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_3SMNN5nwYKVSM4LhwFvaWQ_ZMUmzn4E';
+        const SUPABASE_ANON_KEY = 'sb_publishable_3SMNN5nwYKVSM4LhwFvaWQ_ZMUmz4E';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let isRegister = false;
@@ -189,7 +182,10 @@
 
             if(isRegister) {
                 const { data, error } = await supabaseClient.from('profiles').insert([{ username, password: pass }]);
-                if(error) { alert("Bu kullanıcı adı zaten alınmış veya bir hata oluştu!"); return; }
+                if(error) { 
+                    alert("Kayıt Hatası: " + error.message); 
+                    return; 
+                }
                 alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
                 switchAuthMode();
             } else {
@@ -244,7 +240,7 @@
                 status: 'Bekliyor'
             }]);
 
-            if(error) { alert("Sipariş oluşturulamadı!"); return; }
+            if(error) { alert("Sipariş oluşturulamadı: " + error.message); return; }
 
             alert("Ödeme bildiriminiz başarıyla iletildi! Admin onayından sonra kilit açılacaktır.");
             location.reload();
