@@ -22,7 +22,7 @@
     <header class="border-b border-slate-900/80 sticky top-0 bg-[#07090e]/85 backdrop-blur-md z-40 transition-all">
         <div class="max-w-6xl mx-auto px-4 h-20 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <span class="text-white font-extrabold text-xl tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent cursor-pointer" onclick="changeCategory('Tümü')">Heisenberg</span>
+                <span class="text-white font-extrabold text-xl tracking-tight cursor-pointer" onclick="changeCategory('Tümü')">Heisenberg</span>
             </div>
             
             <div class="flex items-center gap-4">
@@ -40,10 +40,10 @@
     <main class="max-w-6xl mx-auto px-4 py-12 animate-fade">
         <div class="text-center max-w-2xl mx-auto mb-10 space-y-3">
             <h1 id="page-title" class="text-3xl md:text-4xl font-extrabold tracking-tight text-white">Güvenli Arşiv Paneli</h1>
-            <p id="page-desc" class="text-slate-500 text-xs">Şifrelenmiş özel video setleri ve kategorize edilmiş veri paketleri.</p>
+            <p id="page-desc" class="text-slate-500 text-xs">Şifrelenmiş özel video setleri ve veri paketleri.</p>
         </div>
 
-        <!-- Kategoriler (Ayrı Sayfa Mantığı) -->
+        <!-- Kategoriler -->
         <div class="flex flex-wrap justify-center gap-2 mb-10" id="category-filters">
             <button onclick="changeCategory('Tümü')" class="cat-btn bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20">Tümü</button>
             <button onclick="changeCategory('Ücretsiz')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Ücretsiz Örnekler</button>
@@ -56,13 +56,13 @@
         <!-- Ürünler Grid -->
         <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
 
-        <!-- Sayfalama (Pagination: 12 Ürün Başına 1 Sayfa) -->
+        <!-- Sayfalama -->
         <div id="pagination-container" class="flex justify-center items-center gap-2 mb-16"></div>
 
-        <!-- İndirme Paneli -->
+        <!-- İndirme Paneli (Kalıcı Kilit Açma) -->
         <div id="downloads-section" class="glass rounded-3xl p-6 hidden border border-slate-800/80 mb-12 animate-fade">
             <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-emerald-400">
-                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Onaylanan ve Erişilebilir Arşivleriniz
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Onaylanan ve Kalıcı Olarak Erişilebilir Arşivleriniz
             </h3>
             <div id="user-downloads" class="space-y-3"></div>
         </div>
@@ -110,8 +110,8 @@
             </div>
 
             <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 mb-6 text-xs">
-                <label class="block text-slate-400 mb-1 font-medium">Ödeme Dekontu Görseli:</label>
-                <input type="file" id="receipt-file" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white cursor-pointer transition">
+                <label class="block text-slate-400 mb-1 font-medium">Ödeme Dekontu Görseli (Zorunlu):</label>
+                <input type="file" id="receipt-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white cursor-pointer transition">
             </div>
 
             <button onclick="checkout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-emerald-600/20">Ödemeyi Bildir & Sipariş Oluştur</button>
@@ -130,7 +130,7 @@
         let allProducts = [];
         let currentCategory = 'Tümü';
         let currentPage = 1;
-        const itemsPerPage = 12; // 12 ürünü geçince 2. sayfa açılır
+        const itemsPerPage = 12;
 
         window.onload = function() {
             checkSession();
@@ -173,7 +173,6 @@
             allProducts = db.products || [];
             
             if(allProducts.length === 0) {
-                // Test için örnek ürünler ekleyelim ki sayfalama testi yapılabilsin
                 allProducts = [
                     { id: 'p0', title: 'Ücretsiz Örnek Demo Video', category: 'Ücretsiz', price: '0', image: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500' },
                     { id: 'p1', title: 'Özel Eğlence Vol. 1', category: 'Özel Eğlence', price: '150', image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500' },
@@ -209,9 +208,7 @@
 
         function changeCategory(cat) {
             currentCategory = cat;
-            currentPage = 1; // Kategori değişince 1. sayfadan başla
-            
-            // Başlıkları güncelle
+            currentPage = 1;
             document.getElementById('page-title').innerText = cat === 'Tümü' ? 'Güvenli Arşiv Paneli' : cat + ' Arşivleri';
             
             document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -230,7 +227,6 @@
             
             let filtered = currentCategory === 'Tümü' ? allProducts : allProducts.filter(p => p.category === currentCategory);
             
-            // Sayfalama Hesaplamaları (12 ürün başı 1 sayfa)
             let totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
             if(currentPage > totalPages) currentPage = totalPages;
             
@@ -266,7 +262,6 @@
                 `;
             });
 
-            // Sayfalama Butonlarını Oluştur (12, 24 ürün sınırlarına göre 2. ve 3. sayfa geçişleri)
             renderPagination(totalPages);
             lucide.createIcons();
         }
@@ -289,7 +284,7 @@
         }
 
         function claimFree(title) {
-            alert(`"${title}" başarıyla hesabınıza tanımlandı! İndirme paneline eklendi.`);
+            alert(`"${title}" başarıyla hesabınıza tanımlandı!`);
             let downloads = document.getElementById('downloads-section');
             downloads.classList.remove('hidden');
             let container = document.getElementById('user-downloads');
@@ -359,37 +354,51 @@
         }
 
         async function checkout() {
-            const file = document.getElementById('receipt-file').files[0];
-            if(cart.length === 0 || !file) { alert("Sepetiniz boş veya ödeme kanıtı yüklenmedi!"); return; }
+            const fileInput = document.getElementById('receipt-file');
+            if (cart.length === 0 || fileInput.files.length === 0) {
+                alert("Lütfen sepetinize ürün ekleyin ve ödeme dekontu görselini yükleyin!");
+                return;
+            }
 
-            let itemsText = cart.map(i => i.name).join(", ");
-            let totalVal = cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺";
+            const file = fileInput.files[0];
+            const reader = new FileReader();
 
-            let db = await getDatabase();
-            if(!db.orders) db.orders = [];
-            db.orders.push({
-                id: 'ord_' + Date.now(),
-                username: currentUser.username,
-                items: itemsText,
-                total: totalVal,
-                status: 'Bekliyor'
-            });
-            await saveDatabase(db);
+            reader.onload = async function(e) {
+                let base64Image = e.target.result;
+                let itemsText = cart.map(i => i.name).join(", ");
+                let totalVal = cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺";
 
-            alert("Ödeme bildiriminiz iletildi! Onay sonrası arşiviniz açılacaktır.");
-            location.reload();
+                let db = await getDatabase();
+                if(!db.orders) db.orders = [];
+                db.orders.push({
+                    id: 'ord_' + Date.now(),
+                    username: currentUser.username,
+                    items: itemsText,
+                    total: totalVal,
+                    status: 'Bekliyor',
+                    receipt: base64Image // Görselin eksiksiz kaydedilmesi
+                });
+                await saveDatabase(db);
+
+                alert("Ödeme bildiriminiz ve dekontunuz başarıyla iletildi! Admin onayından sonra arşiviniz kalıcı olarak açılacaktır.");
+                location.reload();
+            };
+
+            reader.readAsDataURL(file);
         }
 
         async function checkUserDownloads() {
             if(!currentUser) return;
             let db = await getDatabase();
+            // Bu kullanıcıya ait onaylanmış tüm siparişleri buluyoruz
             let myOrders = (db.orders || []).filter(o => o.username === currentUser.username && o.status === 'Onaylandı');
             
             if(myOrders.length > 0) {
                 document.getElementById('downloads-section').classList.remove('hidden');
                 let container = document.getElementById('user-downloads');
+                container.innerHTML = '';
                 myOrders.forEach(order => {
-                    container.innerHTML += `<a href="#" class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group"><span>📥 ${order.items}</span><span class="text-red-500 group-hover:underline">Arşivi İndir</span></a>`;
+                    container.innerHTML += `<a href="#" class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group"><span>📥 ${order.items}</span><span class="text-emerald-400 group-hover:underline">Arşivi İndir / Aç</span></a>`;
                 });
             }
         }
