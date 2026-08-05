@@ -156,7 +156,7 @@
         lucide.createIcons();
 
         const SUPABASE_URL = 'https://smecqlefagohyatzgso.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_secret_b5zVX4YZnaA9vzsbTqc9YQ_VOBq5jqg';
+        const SUPABASE_ANON_KEY = 'sb_secret_rm-kHquWyxj1kSBJTG5S2Q_fbf2vaoC';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let isRegister = false;
@@ -183,15 +183,21 @@
             if(isRegister) {
                 const { error } = await supabaseClient.from('profiles').insert([{ username: username, password: pass }]);
                 if(error) {
-                    alert("Kayıt hatası (Bu kullanıcı adı alınmış olabilir): " + error.message);
+                    alert("Kayıt hatası: " + error.message);
                     return;
                 }
                 alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
                 switchAuthMode();
             } else {
-                const { data, error } = await supabaseClient.from('profiles').select('*').eq('username', username).eq('password', pass).single();
-                if(data) {
-                    currentUser = data;
+                const { data, error } = await supabaseClient.from('profiles').select('*').eq('username', username).eq('password', pass);
+                
+                if(error) {
+                    alert("Giriş hatası: " + error.message);
+                    return;
+                }
+
+                if(data && data.length > 0) {
+                    currentUser = data[0];
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     checkSession();
                     location.reload();
