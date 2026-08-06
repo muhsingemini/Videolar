@@ -10,6 +10,8 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #07090e; color: #94a3b8; }
         .glass { background: rgba(13, 17, 23, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .progress-stripes { background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent); background-size: 1rem 1rem; animation: progress-stripes 1s linear infinite; }
+        @keyframes progress-stripes { from { background-position: 1rem 0; } to { background-position: 0 0; } }
     </style>
 </head>
 <body class="bg-[#07090e] text-slate-300 min-h-screen p-4 md:p-8">
@@ -39,7 +41,7 @@
         <div class="glass rounded-3xl p-6 flex justify-between items-center border border-slate-800/80">
             <div>
                 <h1 class="text-lg font-bold text-white">⚙️ Heisenberg Yönetim Paneli</h1>
-                <p class="text-slate-500 text-xs">Arşiv yönetimi, kategori seçimi ve ödeme onay merkezi.</p>
+                <p class="text-slate-500 text-xs">Arşiv yönetimi, ilerleme çubuklu dosya yükleme ve ödeme onay merkezi.</p>
             </div>
             <button onclick="location.reload()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition text-slate-300">Çıkış Yap</button>
         </div>
@@ -52,8 +54,6 @@
                 </h3>
                 <div class="space-y-3">
                     <input type="text" id="new-title" placeholder="Arşiv Başlığı (Örn: Özel Seri #1)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
-                    
-                    <!-- KATEGORİLER (Anasayfa ile Tam Eşitlendi) -->
                     <select id="new-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                         <option value="Ücretsiz">Ücretsiz</option>
                         <option value="Özel Eğlence">Özel Eğlence</option>
@@ -61,16 +61,35 @@
                         <option value="Mega Paket">Mega Paket</option>
                         <option value="Sinema & Dizi">Sinema & Dizi</option>
                     </select>
-
                     <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
-                    <input type="text" id="new-video-link" placeholder="Video İzleme/İndirme Linki (Streamable, Drive vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
+                    
+                    <!-- 1. Seçenek: Link -->
+                    <input type="text" id="new-video-link" placeholder="Video Linki (Drive, Yandex vb. isteğe bağlı)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
+
+                    <!-- 2. Seçenek: Dosya Yükleme -->
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Veya Bilgisayarından Dosya Olarak Yükle (.mp4):</label>
+                        <input type="file" id="new-video-file" accept="video/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600/20 file:text-blue-400 cursor-pointer">
+                    </div>
 
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin:</label>
                         <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
                     </div>
                 </div>
-                <button onclick="addNewProduct()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20">Arşivi Yayınla</button>
+
+                <!-- İlerleme (Progress) Çubuğu Alanı -->
+                <div id="upload-progress-container" class="hidden">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1.5">
+                        <span id="upload-status-text">İşleniyor...</span>
+                        <span id="upload-percent-text">%0</span>
+                    </div>
+                    <div class="w-full bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden relative">
+                        <div id="upload-progress-bar" class="bg-red-600 h-3 rounded-full progress-stripes transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <button id="publish-btn" onclick="addNewProduct()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20 mt-2">Arşivi Yayınla</button>
                 
                 <div class="mt-4 pt-4 border-t border-slate-800">
                     <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-2">Yayınlanan Arşivler & Silme:</h4>
@@ -119,6 +138,8 @@
         </div>
     </div>
 
+    <!-- Şifreleme -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
         lucide.createIcons();
         const BIN_ID = '6a73c66cf5f4af5e29f07574';
@@ -140,12 +161,32 @@
             } catch(e) { return { users: [], orders: [], products: [], accounts: [] }; }
         }
 
-        async function saveDatabase(data) {
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
-                body: JSON.stringify(data)
-            });
+        // Yükleme çubuğunu kontrol edebilmek için özel kaydetme fonksiyonu (XMLHttpRequest ile)
+        function uploadDatabaseWithProgress(data, progressCallback, successCallback, errorCallback) {
+            let xhr = new XMLHttpRequest();
+            xhr.open("PUT", `https://api.jsonbin.io/v3/b/${BIN_ID}`, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("X-Master-Key", MASTER_KEY);
+
+            xhr.upload.onprogress = function(event) {
+                if (event.lengthComputable) {
+                    let percentComplete = Math.round((event.loaded / event.total) * 100);
+                    progressCallback(percentComplete);
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    successCallback();
+                } else if (xhr.status === 413) {
+                    errorCallback("BOYUT_SINIRI_ASILDI");
+                } else {
+                    errorCallback("Hata kodu: " + xhr.status);
+                }
+            };
+
+            xhr.onerror = function() { errorCallback("Bağlantı Hatası"); };
+            xhr.send(JSON.stringify(data));
         }
 
         async function loadData() {
@@ -237,88 +278,144 @@
         async function approveOrder(index) {
             let db = await getDatabase();
             db.orders[index].status = 'Onaylandı';
-            await saveDatabase(db);
-            alert("Ödeme onaylandı!");
-            closeReceiptModal();
-            loadData();
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(db) });
+            alert("Ödeme onaylandı!"); closeReceiptModal(); loadData();
         }
 
         async function rejectOrder(index) {
-            if(!confirm("Bu ödeme bildirimini reddetmek istediğinize emin misiniz?")) return;
+            if(!confirm("Emin misiniz?")) return;
             let db = await getDatabase();
             db.orders.splice(index, 1);
-            await saveDatabase(db);
-            alert("Ödeme bildirimi reddedildi ve silindi.");
-            closeReceiptModal();
-            loadData();
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(db) });
+            alert("Reddedildi."); closeReceiptModal(); loadData();
         }
 
         async function deleteProduct(index) {
-            if(!confirm("Bu arşivi siteden kalıcı olarak silmek istiyor musunuz?")) return;
+            if(!confirm("Arşivi silmek istiyor musunuz?")) return;
             let db = await getDatabase();
             db.products.splice(index, 1);
-            await saveDatabase(db);
-            alert("Arşiv silindi!");
-            loadData();
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(db) });
+            alert("Arşiv silindi!"); loadData();
         }
 
         function compressImage(file, callback) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = function (event) {
-                const img = new Image();
-                img.src = event.target.result;
+                const img = new Image(); img.src = event.target.result;
                 img.onload = function () {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; const MAX_HEIGHT = 400;
                     let width = img.width; let height = img.height;
-                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
-                    else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                    if (width > 600) { height *= 600 / width; width = 600; }
                     canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
                     callback(canvas.toDataURL('image/jpeg', 0.7));
                 }
             }
         }
 
+        // GÜNCELLENMİŞ VİDEO YÜKLEME FONKSİYONU
         async function addNewProduct() {
             let title = document.getElementById('new-title').value.trim();
             let category = document.getElementById('new-category').value;
             let price = document.getElementById('new-price').value.trim();
             let videoLink = document.getElementById('new-video-link').value.trim();
+            let videoFile = document.getElementById('new-video-file').files[0];
             let imageFile = document.getElementById('new-image').files[0];
 
-            if(!title || price === "" || !videoLink) { 
-                alert("Lütfen başlık, fiyat ve video linkini eksiksiz doldurun!"); 
-                return; 
-            }
+            if(!title || price === "") { alert("Başlık ve fiyat zorunludur!"); return; }
+            if(!videoLink && !videoFile) { alert("Lütfen video dosyası seçin veya bir link girin!"); return; }
 
-            if(imageFile) {
-                compressImage(imageFile, async function(compressedImgUrl) {
-                    await saveProductToDB(title, category, price, videoLink, compressedImgUrl);
-                });
+            // İlerleme çubuğunu göster
+            let progressContainer = document.getElementById('upload-progress-container');
+            let progressBar = document.getElementById('upload-progress-bar');
+            let statusText = document.getElementById('upload-status-text');
+            let percentText = document.getElementById('upload-percent-text');
+            let publishBtn = document.getElementById('publish-btn');
+            
+            progressContainer.classList.remove('hidden');
+            publishBtn.disabled = true;
+            publishBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            if(videoFile) {
+                // Aşama 1: Dosyayı okuma işlemi (Sarı Bar)
+                statusText.innerText = "Video bilgisayardan okunuyor...";
+                progressBar.className = "bg-amber-500 h-3 rounded-full progress-stripes transition-all duration-300";
+                
+                const reader = new FileReader();
+                reader.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        let percent = Math.round((e.loaded / e.total) * 100);
+                        // İlk %50'lik dilim dosya okumaya ayrılır
+                        let halfPercent = Math.round(percent / 2);
+                        progressBar.style.width = halfPercent + '%';
+                        percentText.innerText = '%' + halfPercent;
+                    }
+                };
+
+                reader.onload = function(e) {
+                    let videoBase64 = e.target.result;
+                    processAndUpload(title, category, price, videoBase64, imageFile, true);
+                };
+                reader.readAsDataURL(videoFile);
+
             } else {
-                await saveProductToDB(title, category, price, videoLink, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
+                // Sadece link girilmişse direkt yükleme aşamasına geç
+                processAndUpload(title, category, price, videoLink, imageFile, false);
             }
         }
 
-        async function saveProductToDB(title, category, price, videoLink, imageUrl) {
+        async function processAndUpload(title, category, price, videoSource, imageFile, isVideoFile) {
+            if(imageFile) {
+                compressImage(imageFile, async function(compressedImgUrl) {
+                    executeUpload(title, category, price, videoSource, compressedImgUrl, isVideoFile);
+                });
+            } else {
+                executeUpload(title, category, price, videoSource, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500', isVideoFile);
+            }
+        }
+
+        async function executeUpload(title, category, price, videoSource, imageUrl, isVideoFile) {
             let db = await getDatabase();
             if(!db.products) db.products = [];
-            
-            db.products.push({
-                id: 'prod_' + Date.now(),
-                title: title,
-                category: category,
-                price: price,
-                videoLink: videoLink,
-                image: imageUrl
-            });
+            db.products.push({ id: 'prod_' + Date.now(), title, category, price, videoLink: videoSource, image: imageUrl });
 
-            await saveDatabase(db);
-            alert("Arşiv başarıyla yayınlandı!");
-            location.reload();
+            let progressBar = document.getElementById('upload-progress-bar');
+            let statusText = document.getElementById('upload-status-text');
+            let percentText = document.getElementById('upload-percent-text');
+
+            statusText.innerText = "Sunucuya aktarılıyor...";
+            progressBar.className = "bg-red-600 h-3 rounded-full progress-stripes transition-all duration-300";
+
+            // Aşama 2: Veritabanına yükleme (Kırmızı Bar)
+            uploadDatabaseWithProgress(db, 
+                function(percent) {
+                    // Eğer dosya seçildiyse, %50'den başlayıp %100'e gitsin. Sadece linkse 0'dan 100'e.
+                    let totalPercent = isVideoFile ? (50 + Math.round(percent / 2)) : percent;
+                    progressBar.style.width = totalPercent + '%';
+                    percentText.innerText = '%' + totalPercent;
+                },
+                function() {
+                    statusText.innerText = "Tamamlandı!";
+                    progressBar.style.width = '100%';
+                    percentText.innerText = '%100';
+                    setTimeout(() => {
+                        alert("Arşiv başarıyla yayınlandı!");
+                        location.reload();
+                    }, 500);
+                },
+                function(errorMsg) {
+                    document.getElementById('upload-progress-container').classList.add('hidden');
+                    document.getElementById('publish-btn').disabled = false;
+                    document.getElementById('publish-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+                    
+                    if(errorMsg === "BOYUT_SINIRI_ASILDI") {
+                        alert("❌ HATA: Yüklemeye çalıştığınız video çok büyük ve veritabanı sınırını aştı!\n\nLütfen bu uzun video için bilgisayardan dosya seçmek yerine, videoyu Drive/Yandex'e yükleyip 'Link' kutusuna yapıştırın.");
+                    } else {
+                        alert("Hata oluştu: " + errorMsg);
+                    }
+                }
+            );
         }
 
         async function addPaymentAccount() {
@@ -329,16 +426,15 @@
             let db = await getDatabase();
             if(!db.accounts) db.accounts = [];
             db.accounts.push({ id: 'acc_' + Date.now(), name, type, detail });
-            await saveDatabase(db);
-            alert("Ödeme hesabı eklendi!");
-            loadData();
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(db) });
+            alert("Ödeme hesabı eklendi!"); loadData();
         }
 
         async function deleteAccount(index) {
             if(!confirm("Bu hesabı silmek istiyor musunuz?")) return;
             let db = await getDatabase();
             db.accounts.splice(index, 1);
-            await saveDatabase(db);
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY }, body: JSON.stringify(db) });
             loadData();
         }
     </script>
