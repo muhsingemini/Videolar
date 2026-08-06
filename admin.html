@@ -61,11 +61,17 @@
                     </select>
                     <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                     
-                    <!-- YENİ: Gerçek Video Linki -->
-                    <input type="url" id="new-video-link" placeholder="Videonun İzleme/İndirme Linki (Google Drive, Yandex vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none focus:border-emerald-500 placeholder-emerald-700/50">
+                    <!-- 1. Seçenek: Harici Video Linki (Streamable, Drive, vb.) -->
+                    <input type="text" id="new-video-link" placeholder="Video Linki (Streamable, Drive vb. isteğe bağlı)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
                     
+                    <!-- 2. Seçenek: Bilgisayardan Doğrudan Video Dosyası (MP4 vb.) -->
                     <div>
-                        <label class="block text-[10px] text-slate-500 mb-1">Videonun Kapak Görselini Seçin:</label>
+                        <label class="block text-[10px] text-slate-400 mb-1">Veya Bilgisayarından Video Dosyası Seç (.mp4):</label>
+                        <input type="file" id="new-video-file" accept="video/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-800 file:text-white cursor-pointer">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Videonun Kapak Görselini Seçin:</label>
                         <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
                     </div>
                 </div>
@@ -138,8 +144,8 @@
 
         async function loadData() {
             let db = await getDatabase();
-            
             if(document.getElementById('user-count')) document.getElementById('user-count').innerText = (db.users || []).length;
+            
             let uList = document.getElementById('users-list');
             if(uList) {
                 uList.innerHTML = db.users && db.users.length ? "" : "<p class='text-slate-600 text-xs'>Kayıtlı üye yok.</p>";
@@ -200,26 +206,49 @@
             let title = document.getElementById('new-title').value.trim();
             let category = document.getElementById('new-category').value;
             let price = document.getElementById('new-price').value.trim();
-            let videoLink = document.getElementById('new-video-link').value.trim(); // GERÇEK VİDEO LİNKİ
+            let videoLink = document.getElementById('new-video-link').value.trim();
+            let videoFile = document.getElementById('new-video-file').files[0];
             let imageFile = document.getElementById('new-image').files[0];
 
-            if(!title || price === "" || !videoLink) { alert("Lütfen başlık, fiyat ve Video İndirme Linkini doldurun!"); return; }
+            if(!title || price === "") { alert("Lütfen başlık ve fiyat alanlarını doldurun!"); return; }
 
-            if(imageFile) {
+            // Eğer bilgisayardan video dosyası seçildiyse onu Base64'e çevir, yoksa girilen linki kullan
+            if(videoFile) {
                 const reader = new FileReader();
-                reader.onload = async function(e) { await saveProductToDB(title, category, price, videoLink, e.target.result); };
-                reader.readAsDataURL(imageFile);
+                reader.onload = async function(e) {
+                    let videoData = e.target.result;
+                    processImageAndSave(title, category, price, videoData, imageFile, true);
+                };
+                reader.readAsDataURL(videoFile);
             } else {
-                await saveProductToDB(title, category, price, videoLink, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
+                processImageAndSave(title, category, price, videoLink || '#', imageFile, false);
             }
         }
 
-        async function saveProductToDB(title, category, price, videoLink, imageUrl) {
+        async function processImageAndSave(title, category, price, videoSource, imageFile, isVideoFile) {
+            if(imageFile) {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    await saveProductToDB(title, category, price, videoSource, e.target.result, isVideoFile);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                await saveProductToDB(title, category, price, videoSource, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500', isVideoFile);
+            }
+        }
+
+        async function saveProductToDB(title, category, price, videoSource, imageUrl, isVideoFile) {
             let db = await getDatabase();
             if(!db.products) db.products = [];
-            db.products.push({ id: 'prod_' + Date.now(), title, category, price, videoLink, image: imageUrl });
+            db.products.push({
+                id: 'prod_' + Date.now(),
+                title, category, price,
+                videoLink: videoSource,
+                isVideoFile: isVideoFile, // Bilgisayardan dosya mı yüklendi yoksa link mi?
+                image: imageUrl
+            });
             await saveDatabase(db);
-            alert("Video arşivi ve indirme linki başarıyla eklendi!");
+            alert("Video arşivi başarıyla eklendi!");
             location.reload();
         }
 
