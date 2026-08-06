@@ -42,18 +42,23 @@
             <p id="page-desc" class="text-slate-500 text-xs">Şifrelenmiş özel video setleri ve veri paketleri.</p>
         </div>
 
+        <!-- Kategoriler (Admin Paneli ile Birebir Uyumlu) -->
         <div class="flex flex-wrap justify-center gap-2 mb-10" id="category-filters">
             <button onclick="changeCategory('Tümü')" class="cat-btn bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20">Tümü</button>
-            <button onclick="changeCategory('Ücretsiz')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Ücretsiz Örnekler</button>
+            <button onclick="changeCategory('Ücretsiz')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Ücretsiz</button>
             <button onclick="changeCategory('Özel Eğlence')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Özel Eğlence</button>
             <button onclick="changeCategory('Gece Serisi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Gece Serisi</button>
             <button onclick="changeCategory('Mega Paket')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Mega Paket</button>
             <button onclick="changeCategory('Sinema & Dizi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Sinema & Dizi</button>
         </div>
 
+        <!-- Ürünler Grid -->
         <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
+
+        <!-- Sayfalama -->
         <div id="pagination-container" class="flex justify-center items-center gap-2 mb-16"></div>
 
+        <!-- İndirme Paneli -->
         <div id="downloads-section" class="glass rounded-3xl p-6 hidden border border-slate-800/80 mb-12 animate-fade">
             <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-emerald-400"><i data-lucide="check-circle-2" class="w-4 h-4"></i> Onaylanan ve Kalıcı Olarak Erişilebilir Arşivleriniz</h3>
             <div id="user-downloads" class="space-y-3"></div>
@@ -136,7 +141,9 @@
 
         async function loadStoreData() {
             let db = await getDatabase();
+            // Admin panelinden eklenen tüm ürünleri direkt yüklüyoruz
             allProducts = db.products || [];
+            
             if(allProducts.length === 0) {
                 allProducts = [
                     { id: 'p0', title: 'Ücretsiz Örnek Demo Video', category: 'Ücretsiz', price: '0', image: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500', videoLink: 'https://www.google.com' }
@@ -158,7 +165,7 @@
             currentCategory = cat; currentPage = 1;
             document.getElementById('page-title').innerText = cat === 'Tümü' ? 'Güvenli Arşiv Paneli' : cat + ' Arşivleri';
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                btn.className = (btn.innerText.includes(cat) || (cat === 'Tümü' && btn.innerText === 'Tümü')) ? "cat-btn bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20" : "cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition";
+                btn.className = (btn.innerText.trim() === cat.trim()) ? "cat-btn bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20" : "cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition";
             });
             renderProducts();
         }
@@ -168,7 +175,7 @@
             if(!grid) return;
             grid.innerHTML = '';
             
-            let filtered = currentCategory === 'Tümü' ? allProducts : allProducts.filter(p => p.category === currentCategory);
+            let filtered = currentCategory === 'Tümü' ? allProducts : allProducts.filter(p => p.category.trim() === currentCategory.trim());
             let totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
             if(currentPage > totalPages) currentPage = totalPages;
             
@@ -176,16 +183,15 @@
             let paginatedItems = filtered.slice(start, start + itemsPerPage);
             
             if(paginatedItems.length === 0) {
-                grid.innerHTML = `<div class="col-span-3 text-center py-16 text-slate-500 text-xs">Bu kategoride arşiv bulunmuyor.</div>`;
+                grid.innerHTML = `<div class="col-span-3 text-center py-16 text-slate-500 text-xs">Bu kategoride henüz arşiv bulunmuyor.</div>`;
                 document.getElementById('pagination-container').innerHTML = '';
                 return;
             }
 
             paginatedItems.forEach(p => {
-                let isFree = p.price === '0' || p.price === 0;
+                let isFree = p.price === '0' || p.price === 0 || p.price === '';
                 let priceText = isFree ? '<span class="text-emerald-400 font-bold">Ücretsiz</span>' : `<span class="text-emerald-400 font-bold">${p.price} ₺</span>`;
                 
-                // ÜCRETSİZ İSE DİREKT LİNKE YÖNLENDİR
                 let realLink = p.videoLink || '#';
                 let btnAction = isFree 
                     ? `<button onclick="window.open('${realLink}', '_blank')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-emerald-600/20">Hemen İzle / İndir</button>` 
@@ -295,8 +301,7 @@
                 myOrders.forEach(order => {
                     let orderedItemNames = order.items.split(", ");
                     orderedItemNames.forEach(itemName => {
-                        // DB'deki ürünlerden bu isme sahip ürünü bul ve GERÇEK VİDEO LİNKİNİ al
-                        let productMatch = (db.products || []).find(p => p.title === itemName);
+                        let productMatch = (db.products || []).find(p => p.title.trim() === itemName.trim());
                         let realVideoLink = (productMatch && productMatch.videoLink) ? productMatch.videoLink : '#';
 
                         container.innerHTML += `
