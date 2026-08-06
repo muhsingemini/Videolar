@@ -41,7 +41,7 @@
                 <h1 class="text-lg font-bold text-white">⚙️ Heisenberg Yönetim Paneli</h1>
                 <p class="text-slate-500 text-xs">Arşiv yönetimi, video linki ekleme, ürün silme ve ödeme onay merkezi.</p>
             </div>
-            <button onclick="location.reload()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition text-slate-300">Çıkış Yap</button>
+            <button onclick="logoutAdmin()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition text-slate-300">Çıkış Yap</button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -124,12 +124,31 @@
         const BIN_ID = '6a73c66cf5f4af5e29f07574';
         const MASTER_KEY = '$2a$10$zh2aEsam0mcpeFIrGF40pekMKtzirnqXSEFm27I6NOa1SGFR9bkG.';
 
-        function loginAdmin() {
-            if(document.getElementById('admin-pass').value === "MagnostakHeisenberg6767") {
+        // SAYFA YÜKLENDİĞİNDE OTURUMU KONTROL ET
+        window.onload = function() {
+            if(sessionStorage.getItem('heisenberg_admin_auth') === 'true') {
                 document.getElementById('admin-login-modal').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
                 loadData();
-            } else { alert("Hatalı Yönetici Şifresi!"); }
+            }
+        };
+
+        function loginAdmin() {
+            if(document.getElementById('admin-pass').value === "MagnostakHeisenberg6767") {
+                // Şifre doğruysa oturumu hafızaya al
+                sessionStorage.setItem('heisenberg_admin_auth', 'true');
+                document.getElementById('admin-login-modal').classList.add('hidden');
+                document.getElementById('admin-content').classList.remove('hidden');
+                loadData();
+            } else { 
+                alert("Hatalı Yönetici Şifresi!"); 
+            }
+        }
+
+        function logoutAdmin() {
+            // Çıkış yapınca hafızadaki oturumu sil
+            sessionStorage.removeItem('heisenberg_admin_auth');
+            location.reload();
         }
 
         async function getDatabase() {
