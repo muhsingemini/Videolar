@@ -29,9 +29,7 @@
         <div class="glass w-full max-w-md rounded-3xl p-6 border border-slate-800 relative shadow-2xl text-center">
             <button onclick="closeReceiptModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             <h3 class="text-sm font-bold text-white mb-4">Müşteri Ödeme Dekontu</h3>
-            <div id="receipt-img-container" class="bg-slate-950 p-2 rounded-xl border border-slate-800 mb-4 flex items-center justify-center max-h-96 overflow-hidden">
-                <span class="text-slate-500 text-xs">Dekont yükleniyor...</span>
-            </div>
+            <div id="receipt-img-container" class="bg-slate-950 p-2 rounded-xl border border-slate-800 mb-4 flex items-center justify-center max-h-96 overflow-hidden"></div>
             <div id="receipt-actions"></div>
         </div>
     </div>
@@ -47,38 +45,45 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Video Ekleme -->
+            <!-- Video Ekleme Paneli -->
             <div class="glass rounded-3xl p-6 md:p-8 border border-slate-800/80 space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4 text-red-600"></i> Yeni Arşiv Videosu Ekle
                 </h3>
                 <div class="space-y-3">
-                    <input type="text" id="new-title" placeholder="Arşiv Başlığı" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
-                    <select id="new-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
+                    <input type="text" id="new-title" placeholder="Arşiv Başlığı" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
+                    <select id="new-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                         <option value="Ücretsiz">Ücretsiz Örnekler</option>
                         <option value="Özel Eğlence">Özel Eğlence</option>
                         <option value="Gece Serisi">Gece Serisi</option>
                         <option value="Mega Paket">Mega Paket</option>
                         <option value="Sinema & Dizi">Sinema & Dizi</option>
                     </select>
-                    <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
-                    <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
+                    <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
+                    
+                    <!-- YENİ: Gerçek Video Linki -->
+                    <input type="url" id="new-video-link" placeholder="Videonun İzleme/İndirme Linki (Google Drive, Yandex vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none focus:border-emerald-500 placeholder-emerald-700/50">
+                    
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Videonun Kapak Görselini Seçin:</label>
+                        <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
+                    </div>
                 </div>
                 <button onclick="addNewProduct()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20">Arşivi Yayınla</button>
             </div>
 
-            <!-- IBAN / Kripto Ekleme -->
+            <!-- IBAN / Kripto Ekleme Paneli -->
             <div class="glass rounded-3xl p-6 md:p-8 border border-slate-800/80 space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i> Ödeme Hesapları (IBAN & Kripto)
                 </h3>
                 <div class="space-y-3">
-                    <input type="text" id="acc-name" placeholder="Hesap Adı" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
-                    <select id="acc-type" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition">
+                    <input type="text" id="acc-name" placeholder="Hesap Adı" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
+                    <select id="acc-type" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                         <option value="Banka / IBAN">Banka / IBAN</option>
                         <option value="Kripto">Kripto (USDT / BTC vb.)</option>
                     </select>
-                    <textarea id="acc-detail" placeholder="IBAN veya Cüzdan Adresi" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600 transition"></textarea>
+                    <textarea id="acc-detail" placeholder="IBAN veya Cüzdan Adresi" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600"></textarea>
                 </div>
                 <button onclick="addPaymentAccount()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-emerald-600/20">Yeni Hesap Ekle</button>
                 
@@ -91,16 +96,12 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="glass rounded-3xl p-6 border border-slate-800/80">
-                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-blue-400">
-                    <i data-lucide="users" class="w-4 h-4"></i> Kayıtlı Üyeler (<span id="user-count">0</span>)
-                </h3>
+                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-blue-400"><i data-lucide="users" class="w-4 h-4"></i> Kayıtlı Üyeler (<span id="user-count">0</span>)</h3>
                 <div id="users-list" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
             </div>
 
             <div class="glass rounded-3xl p-6 border border-slate-800/80">
-                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-amber-400">
-                    <i data-lucide="credit-card" class="w-4 h-4"></i> Ödeme Bildirimleri & Dekont İnceleme
-                </h3>
+                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-amber-400"><i data-lucide="credit-card" class="w-4 h-4"></i> Ödeme Bildirimleri & Dekont İnceleme</h3>
                 <div id="orders-list" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
             </div>
         </div>
@@ -108,40 +109,29 @@
 
     <script>
         lucide.createIcons();
-
         const BIN_ID = '6a73c66cf5f4af5e29f07574';
         const MASTER_KEY = '$2a$10$zh2aEsam0mcpeFIrGF40pekMKtzirnqXSEFm27I6NOa1SGFR9bkG.';
 
         function loginAdmin() {
-            const pass = document.getElementById('admin-pass').value;
-            if(pass === "MagnostakHeisenberg6767") {
+            if(document.getElementById('admin-pass').value === "MagnostakHeisenberg6767") {
                 document.getElementById('admin-login-modal').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
                 loadData();
-            } else {
-                alert("Hatalı Yönetici Şifresi!");
-            }
+            } else { alert("Hatalı Yönetici Şifresi!"); }
         }
 
         async function getDatabase() {
             try {
-                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': MASTER_KEY }
-                });
+                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers: { 'X-Master-Key': MASTER_KEY } });
                 let json = await res.json();
                 return json.record || { users: [], orders: [], products: [], accounts: [] };
-            } catch(e) {
-                return { users: [], orders: [], products: [], accounts: [] };
-            }
+            } catch(e) { return { users: [], orders: [], products: [], accounts: [] }; }
         }
 
         async function saveDatabase(data) {
             await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': MASTER_KEY
-                },
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                 body: JSON.stringify(data)
             });
         }
@@ -149,53 +139,36 @@
         async function loadData() {
             let db = await getDatabase();
             
-            let uCount = document.getElementById('user-count');
-            if(uCount) uCount.innerText = (db.users || []).length;
-            
+            if(document.getElementById('user-count')) document.getElementById('user-count').innerText = (db.users || []).length;
             let uList = document.getElementById('users-list');
             if(uList) {
                 uList.innerHTML = db.users && db.users.length ? "" : "<p class='text-slate-600 text-xs'>Kayıtlı üye yok.</p>";
-                (db.users || []).forEach(u => {
-                    uList.innerHTML += `<div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs flex justify-between items-center text-slate-300"><span class="font-medium">👤 ${u.username}</span></div>`;
-                });
+                (db.users || []).forEach(u => uList.innerHTML += `<div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs flex justify-between items-center text-slate-300"><span class="font-medium">👤 ${u.username}</span></div>`);
             }
 
             let oList = document.getElementById('orders-list');
-            let orders = db.orders || [];
             if(oList) {
+                let orders = db.orders || [];
                 oList.innerHTML = orders.length ? "" : "<p class='text-slate-600 text-xs'>Bekleyen bildirim yok.</p>";
                 orders.forEach((o, index) => {
                     let badgeColor = o.status === 'Onaylandı' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
                     oList.innerHTML += `
                         <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 text-xs space-y-2">
-                            <div class="flex justify-between items-center font-bold text-white">
-                                <span>Müşteri: ${o.username}</span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] border ${badgeColor}">${o.status}</span>
-                            </div>
+                            <div class="flex justify-between items-center font-bold text-white"><span>Müşteri: ${o.username}</span><span class="px-2.5 py-0.5 rounded-full text-[10px] border ${badgeColor}">${o.status}</span></div>
                             <p class="text-slate-400 text-[11px]">Arşiv: ${o.items} (${o.total})</p>
                             ${o.status === 'Bekliyor' ? `<button onclick="openReceiptModal(${index})" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs transition border border-slate-700">Dekontu İncele & Onayla</button>` : '<span class="text-[10px] text-emerald-400 font-bold">Onaylandı</span>'}
-                        </div>
-                    `;
+                        </div>`;
                 });
             }
 
             let accList = document.getElementById('admin-accounts-list');
-            let accounts = db.accounts || [];
             if(accList) {
-                if(accounts.length === 0) {
-                    accList.innerHTML = `<p class='text-slate-600 text-xs'>Henüz eklenmiş özel hesap yok.</p>`;
-                } else {
+                let accounts = db.accounts || [];
+                if(accounts.length === 0) { accList.innerHTML = `<p class='text-slate-600 text-xs'>Kayıtlı hesap yok.</p>`; } 
+                else {
                     accList.innerHTML = '';
                     accounts.forEach((acc, i) => {
-                        accList.innerHTML += `
-                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                                <div>
-                                    <span class="font-bold text-slate-200">${acc.name}</span>
-                                    <div class="text-slate-500 font-mono text-[10px] truncate max-w-[180px]">${acc.detail}</div>
-                                </div>
-                                <button onclick="deleteAccount(${i})" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 py-1 rounded-lg transition font-semibold text-[10px]">Sil</button>
-                            </div>
-                        `;
+                        accList.innerHTML += `<div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs"><div><span class="font-bold text-slate-200">${acc.name}</span><div class="text-slate-500 font-mono text-[10px] truncate max-w-[180px]">${acc.detail}</div></div><button onclick="deleteAccount(${i})" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 py-1 rounded-lg transition font-semibold text-[10px]">Sil</button></div>`;
                     });
                 }
             }
@@ -204,23 +177,15 @@
         async function openReceiptModal(index) {
             let db = await getDatabase();
             let order = db.orders[index];
-            let modal = document.getElementById('receipt-modal');
+            document.getElementById('receipt-modal').classList.remove('hidden');
             let container = document.getElementById('receipt-img-container');
-            let actions = document.getElementById('receipt-actions');
-
-            modal.classList.remove('hidden');
             if(order.receipt && order.receipt.length > 50) {
                 container.innerHTML = `<img src="${order.receipt}" class="max-h-80 max-w-full object-contain rounded-lg">`;
-            } else {
-                container.innerHTML = `<div class="text-slate-400 text-xs p-4">Dekont görseli bulunamadı veya hatalı yüklenmiş.</div>`;
-            }
-
-            actions.innerHTML = `<button onclick="approveOrder(${index})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20">Dekontu Onayla & Kilidi Aç</button>`;
+            } else { container.innerHTML = `<div class="text-slate-400 text-xs p-4">Dekont görseli yok.</div>`; }
+            document.getElementById('receipt-actions').innerHTML = `<button onclick="approveOrder(${index})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20">Dekontu Onayla & Kilidi Aç</button>`;
         }
 
-        function closeReceiptModal() {
-            document.getElementById('receipt-modal').classList.add('hidden');
-        }
+        function closeReceiptModal() { document.getElementById('receipt-modal').classList.add('hidden'); }
 
         async function approveOrder(index) {
             let db = await getDatabase();
@@ -235,27 +200,26 @@
             let title = document.getElementById('new-title').value.trim();
             let category = document.getElementById('new-category').value;
             let price = document.getElementById('new-price').value.trim();
+            let videoLink = document.getElementById('new-video-link').value.trim(); // GERÇEK VİDEO LİNKİ
             let imageFile = document.getElementById('new-image').files[0];
 
-            if(!title || price === "") { alert("Lütfen başlık ve fiyat alanlarını doldurun!"); return; }
+            if(!title || price === "" || !videoLink) { alert("Lütfen başlık, fiyat ve Video İndirme Linkini doldurun!"); return; }
 
             if(imageFile) {
                 const reader = new FileReader();
-                reader.onload = async function(e) {
-                    await saveProductToDB(title, category, price, e.target.result);
-                };
+                reader.onload = async function(e) { await saveProductToDB(title, category, price, videoLink, e.target.result); };
                 reader.readAsDataURL(imageFile);
             } else {
-                await saveProductToDB(title, category, price, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
+                await saveProductToDB(title, category, price, videoLink, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
             }
         }
 
-        async function saveProductToDB(title, category, price, imageUrl) {
+        async function saveProductToDB(title, category, price, videoLink, imageUrl) {
             let db = await getDatabase();
             if(!db.products) db.products = [];
-            db.products.push({ id: 'prod_' + Date.now(), title, category, price, image: imageUrl });
+            db.products.push({ id: 'prod_' + Date.now(), title, category, price, videoLink, image: imageUrl });
             await saveDatabase(db);
-            alert("Video arşivi resmiyle birlikte başarıyla eklendi!");
+            alert("Video arşivi ve indirme linki başarıyla eklendi!");
             location.reload();
         }
 
@@ -263,28 +227,21 @@
             let name = document.getElementById('acc-name').value.trim();
             let type = document.getElementById('acc-type').value;
             let detail = document.getElementById('acc-detail').value.trim();
-
-            if(!name || !detail) { alert("Lütfen tüm alanları doldurun!"); return; }
-
+            if(!name || !detail) { alert("Doldurun!"); return; }
             let db = await getDatabase();
             if(!db.accounts) db.accounts = [];
             db.accounts.push({ id: 'acc_' + Date.now(), name, type, detail });
             await saveDatabase(db);
-            alert("Ödeme hesabı eklendi!");
+            alert("Hesap eklendi!");
             loadData();
-            document.getElementById('acc-name').value = '';
-            document.getElementById('acc-detail').value = '';
         }
 
         async function deleteAccount(index) {
-            if(!confirm("Bu ödeme hesabını silmek istiyor musunuz?")) return;
+            if(!confirm("Silmek istiyor musunuz?")) return;
             let db = await getDatabase();
-            if(db.accounts) {
-                db.accounts.splice(index, 1);
-                await saveDatabase(db);
-                alert("Hesap silindi!");
-                loadData();
-            }
+            db.accounts.splice(index, 1);
+            await saveDatabase(db);
+            loadData();
         }
     </script>
 </body>
