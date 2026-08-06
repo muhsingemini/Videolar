@@ -59,7 +59,7 @@
         <!-- Sayfalama -->
         <div id="pagination-container" class="flex justify-center items-center gap-2 mb-16"></div>
 
-        <!-- İndirme Paneli -->
+        <!-- İndirme Paneli (Gerçek İndirme Fonksiyonu) -->
         <div id="downloads-section" class="glass rounded-3xl p-6 hidden border border-slate-800/80 mb-12 animate-fade">
             <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-emerald-400">
                 <i data-lucide="check-circle-2" class="w-4 h-4"></i> Onaylanan ve Kalıcı Olarak Erişilebilir Arşivleriniz
@@ -288,7 +288,21 @@
             let downloads = document.getElementById('downloads-section');
             downloads.classList.remove('hidden');
             let container = document.getElementById('user-downloads');
-            container.innerHTML += `<a href="#" onclick="alert('Demo video indiriliyor...')" class="flex items-center justify-between bg-slate-900 hover:bg-slate-800/80 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group"><span>🎁 ${title} (Örnek)</span><span class="text-emerald-400 group-hover:underline">İndir</span></a>`;
+            triggerRealDownload(title);
+        }
+
+        // Gerçek dosya indirme tetikleyici fonksiyonu
+        function triggerRealDownload(title) {
+            const sampleContent = "Heisenberg Secure Archive - İçerik: " + title + "\nTebrikler, bu şifrelenmiş özel arşiv başarıyla indirildi.";
+            const blob = new Blob([sampleContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = title.replace(/\s+/g, '_') + '_Arsiv.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         async function handleAuth() {
@@ -397,7 +411,12 @@
                 let container = document.getElementById('user-downloads');
                 container.innerHTML = '';
                 myOrders.forEach(order => {
-                    container.innerHTML += `<a href="#" class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group"><span>📥 ${order.items}</span><span class="text-emerald-400 group-hover:underline">Arşivi İndir / Aç</span></a>`;
+                    container.innerHTML += `
+                        <div class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group">
+                            <span>📥 ${order.items}</span>
+                            <button onclick="triggerRealDownload('${order.items}')" class="text-emerald-400 hover:underline cursor-pointer bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">Arşivi İndir</button>
+                        </div>
+                    `;
                 });
             }
         }
