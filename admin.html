@@ -10,8 +10,6 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #07090e; color: #94a3b8; }
         .glass { background: rgba(13, 17, 23, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .progress-stripes { background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent); background-size: 1rem 1rem; animation: progress-stripes 1s linear infinite; }
-        @keyframes progress-stripes { from { background-position: 1rem 0; } to { background-position: 0 0; } }
     </style>
 </head>
 <body class="bg-[#07090e] text-slate-300 min-h-screen p-4 md:p-8">
@@ -41,13 +39,13 @@
         <div class="glass rounded-3xl p-6 flex justify-between items-center border border-slate-800/80">
             <div>
                 <h1 class="text-lg font-bold text-white">⚙️ Heisenberg Yönetim Paneli</h1>
-                <p class="text-slate-500 text-xs">Bağlantı hatasız, bulut destekli video yükleme merkezi.</p>
+                <p class="text-slate-500 text-xs">Arşiv yönetimi, video linki ekleme, ürün silme ve ödeme onay merkezi.</p>
             </div>
             <button onclick="location.reload()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition text-slate-300">Çıkış Yap</button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Video Ekleme Paneli -->
+            <!-- Video Ekleme Paneli (Sadece Link) -->
             <div class="glass rounded-3xl p-6 md:p-8 border border-slate-800/80 space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4 text-red-600"></i> Yeni Arşiv Videosu Ekle
@@ -63,33 +61,14 @@
                     </select>
                     <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                     
-                    <!-- 1. Seçenek: Link -->
-                    <input type="text" id="new-video-link" placeholder="Büyük Dosyalar İçin Link (Drive, Yandex vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
-
-                    <!-- 2. Seçenek: Güvenli Dosya Yükleme -->
-                    <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Veya Bilgisayarından Seç (Maksimum 200 MB):</label>
-                        <input type="file" id="new-video-file" accept="video/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600/20 file:text-blue-400 cursor-pointer">
-                    </div>
+                    <input type="text" id="new-video-link" placeholder="Video İzleme/İndirme Linki (Streamable, Drive, Yandex vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
 
                     <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin:</label>
+                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin (Otomatik Sıkıştırılır):</label>
                         <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
                     </div>
                 </div>
-
-                <!-- Yükleme (Progress) Çubuğu -->
-                <div id="upload-progress-container" class="hidden">
-                    <div class="flex justify-between text-[10px] font-bold text-slate-400 mb-1.5">
-                        <span id="upload-status-text">İşleniyor...</span>
-                        <span id="upload-percent-text">%0</span>
-                    </div>
-                    <div class="w-full bg-slate-900 rounded-full h-3 border border-slate-800 overflow-hidden relative">
-                        <div id="upload-progress-bar" class="bg-amber-500 h-3 rounded-full progress-stripes transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <button id="publish-btn" onclick="addNewProduct()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20 mt-2">Arşivi Yayınla</button>
+                <button id="publish-btn" onclick="addNewProduct()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20">Arşivi Yayınla</button>
                 
                 <div class="mt-4 pt-4 border-t border-slate-800">
                     <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-2">Yayınlanan Arşivler & Silme:</h4>
@@ -303,99 +282,32 @@
             }
         }
 
-        // --- HARİCİ BULUT SUNUCUSUNA VİDEO YÜKLEME FONKSİYONU ---
-        function uploadVideoToCloud(file, progressCallback) {
-            return new Promise((resolve, reject) => {
-                let xhr = new XMLHttpRequest();
-                xhr.open("POST", "https://catbox.moe/user/api.php", true);
-                
-                xhr.upload.onprogress = function(event) {
-                    if (event.lengthComputable) {
-                        let percentComplete = Math.round((event.loaded / event.total) * 100);
-                        progressCallback(percentComplete);
-                    }
-                };
-
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        resolve(xhr.responseText); // Başarılıysa bize .mp4 uzantılı harici linki verir
-                    } else {
-                        reject("Sunucu Hatası: " + xhr.status);
-                    }
-                };
-                
-                xhr.onerror = function() {
-                    reject("Yükleme başarısız. Ağ bağlantınız koptu veya dosya desteklenmiyor.");
-                };
-
-                let formData = new FormData();
-                formData.append('reqtype', 'fileupload');
-                formData.append('fileToUpload', file);
-                xhr.send(formData);
-            });
-        }
-
         async function addNewProduct() {
             let title = document.getElementById('new-title').value.trim();
             let category = document.getElementById('new-category').value;
             let price = document.getElementById('new-price').value.trim();
             let videoLink = document.getElementById('new-video-link').value.trim();
-            let videoFile = document.getElementById('new-video-file').files[0];
             let imageFile = document.getElementById('new-image').files[0];
 
-            if(!title || price === "") { alert("Lütfen başlık ve fiyat alanlarını doldurun!"); return; }
-            if(!videoLink && !videoFile) { alert("Lütfen ya bir link girin ya da video dosyası seçin!"); return; }
+            if(!title || price === "" || !videoLink) { 
+                alert("Lütfen başlık, fiyat ve video linkini eksiksiz doldurun!"); 
+                return; 
+            }
 
-            let progressContainer = document.getElementById('upload-progress-container');
-            let progressBar = document.getElementById('upload-progress-bar');
-            let statusText = document.getElementById('upload-status-text');
-            let percentText = document.getElementById('upload-percent-text');
             let publishBtn = document.getElementById('publish-btn');
-
-            progressContainer.classList.remove('hidden');
+            publishBtn.innerText = "Yayınlanıyor...";
             publishBtn.disabled = true;
-            publishBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            try {
-                let finalVideoUrl = videoLink;
-
-                // EĞER BİLGİSAYARDAN DOSYA SEÇİLDİYSE HARİCİ SUNUCUYA YÜKLE VE LİNKİNİ AL
-                if (videoFile) {
-                    // Maksimum dosya boyutu kontrolü (200MB)
-                    if(videoFile.size > 200 * 1024 * 1024) {
-                        throw new Error("Seçtiğiniz video 200 MB sınırından büyük! Lütfen videoyu Google Drive gibi bir yere yükleyip link olarak ekleyin.");
-                    }
-
-                    statusText.innerText = "Video harici bulut sunucusuna işleniyor...";
-                    progressBar.className = "bg-amber-500 h-3 rounded-full progress-stripes transition-all duration-300";
-                    
-                    finalVideoUrl = await uploadVideoToCloud(videoFile, function(percent) {
-                        let visualPercent = Math.round(percent * 0.9); // Yüklemenin %90'ı video olsun
-                        progressBar.style.width = visualPercent + '%';
-                        percentText.innerText = '%' + visualPercent;
-                    });
-                }
-
-                statusText.innerText = "Kapak resmi ve veritabanı ayarlanıyor...";
-                progressBar.style.width = '95%';
-
-                if(imageFile) {
-                    compressImage(imageFile, async function(compressedImgUrl) {
-                        await finalizeUpload(title, category, price, finalVideoUrl, compressedImgUrl);
-                    });
-                } else {
-                    await finalizeUpload(title, category, price, finalVideoUrl, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
-                }
-
-            } catch (error) {
-                progressContainer.classList.add('hidden');
-                publishBtn.disabled = false;
-                publishBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                alert("Yükleme Hatası: " + (error.message || error));
+            if(imageFile) {
+                compressImage(imageFile, async function(compressedImgUrl) {
+                    await saveProductToDB(title, category, price, videoLink, compressedImgUrl);
+                });
+            } else {
+                await saveProductToDB(title, category, price, videoLink, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
             }
         }
 
-        async function finalizeUpload(title, category, price, videoUrl, imageUrl) {
+        async function saveProductToDB(title, category, price, videoLink, imageUrl) {
             try {
                 let db = await getDatabase();
                 if(!db.products) db.products = [];
@@ -405,27 +317,17 @@
                     title: title,
                     category: category,
                     price: price,
-                    videoLink: videoUrl, // Direkt dosya olarak değil, oluşturulan linki kaydettik!
+                    videoLink: videoLink,
                     image: imageUrl
                 });
 
-                let progressBar = document.getElementById('upload-progress-bar');
-                let statusText = document.getElementById('upload-status-text');
-                let percentText = document.getElementById('upload-percent-text');
-
-                statusText.innerText = "Başarıyla Kaydedildi!";
-                progressBar.className = "bg-emerald-500 h-3 rounded-full transition-all duration-300";
-                progressBar.style.width = '100%';
-                percentText.innerText = '%100';
-
                 await saveDatabase(db);
-                
-                setTimeout(() => {
-                    alert("Arşiv başarıyla yayınlandı!");
-                    location.reload();
-                }, 500);
-            } catch(e) {
-                alert("Veritabanına kaydedilirken beklenmeyen bir hata oluştu.");
+                alert("Arşiv başarıyla yayınlandı!");
+                location.reload();
+            } catch (error) {
+                alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+                document.getElementById('publish-btn').innerText = "Arşivi Yayınla";
+                document.getElementById('publish-btn').disabled = false;
             }
         }
 
