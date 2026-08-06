@@ -30,7 +30,7 @@
             <button onclick="closeReceiptModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             <h3 class="text-sm font-bold text-white mb-4">Müşteri Ödeme Dekontu</h3>
             <div id="receipt-img-container" class="bg-slate-950 p-2 rounded-xl border border-slate-800 mb-4 flex items-center justify-center max-h-96 overflow-hidden"></div>
-            <div id="receipt-actions"></div>
+            <div id="receipt-actions" class="space-y-2"></div>
         </div>
     </div>
 
@@ -39,19 +39,19 @@
         <div class="glass rounded-3xl p-6 flex justify-between items-center border border-slate-800/80">
             <div>
                 <h1 class="text-lg font-bold text-white">⚙️ Heisenberg Yönetim Paneli</h1>
-                <p class="text-slate-500 text-xs">Arşiv yönetimi, dekont inceleme ve ödeme onay merkezi.</p>
+                <p class="text-slate-500 text-xs">Arşiv yönetimi, ürün silme, dekont onayla/reddet merkezi.</p>
             </div>
             <button onclick="location.reload()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition text-slate-300">Çıkış Yap</button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Video Ekleme Paneli -->
+            <!-- Video Ekleme ve Listeleme / Silme Paneli -->
             <div class="glass rounded-3xl p-6 md:p-8 border border-slate-800/80 space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-4 h-4 text-red-600"></i> Yeni Arşiv Videosu Ekle
+                    <i data-lucide="plus-circle" class="w-4 h-4 text-red-600"></i> Arşiv Videoları & Yönetimi
                 </h3>
                 <div class="space-y-3">
-                    <input type="text" id="new-title" placeholder="Arşiv Başlığı (Örn: Özel Seri #1)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
+                    <input type="text" id="new-title" placeholder="Arşiv Başlığı" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                     <select id="new-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                         <option value="Ücretsiz">Ücretsiz Örnekler</option>
                         <option value="Özel Eğlence">Özel Eğlence</option>
@@ -60,15 +60,16 @@
                         <option value="Sinema & Dizi">Sinema & Dizi</option>
                     </select>
                     <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
-                    
-                    <input type="text" id="new-video-link" placeholder="Video İzleme/İndirme Linki (Streamable, Drive, Yandex vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
-                    
-                    <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin (Otomatik Sıkıştırılır):</label>
-                        <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
-                    </div>
+                    <input type="text" id="new-video-link" placeholder="Video İzleme/İndirme Linki" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none">
+                    <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
                 </div>
                 <button onclick="addNewProduct()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20">Arşivi Yayınla</button>
+                
+                <!-- Ürünleri Silme Listesi -->
+                <div class="mt-4 pt-4 border-t border-slate-800">
+                    <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-2">Yayınlanan Arşivler & Silme:</h4>
+                    <div id="admin-products-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                </div>
             </div>
 
             <!-- IBAN / Kripto Ekleme Paneli -->
@@ -93,15 +94,21 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Bildirimler ve Üyeler Bölümü (Bekleyenler Ayrı Yerde) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="glass rounded-3xl p-6 border border-slate-800/80">
-                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-blue-400"><i data-lucide="users" class="w-4 h-4"></i> Kayıtlı Üyeler (<span id="user-count">0</span>)</h3>
-                <div id="users-list" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
+                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-amber-400"><i data-lucide="clock" class="w-4 h-4"></i> Bekleyen Ödemeler</h3>
+                <div id="pending-orders-list" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
             </div>
 
             <div class="glass rounded-3xl p-6 border border-slate-800/80">
-                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-amber-400"><i data-lucide="credit-card" class="w-4 h-4"></i> Ödeme Bildirimleri & Dekont İnceleme</h3>
-                <div id="orders-list" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
+                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-emerald-400"><i data-lucide="check-circle" class="w-4 h-4"></i> Onaylanan Geçmiş</h3>
+                <div id="approved-orders-list" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
+            </div>
+
+            <div class="glass rounded-3xl p-6 border border-slate-800/80">
+                <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-blue-400"><i data-lucide="users" class="w-4 h-4"></i> Üyeler (<span id="user-count">0</span>)</h3>
+                <div id="users-list" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
             </div>
         </div>
     </div>
@@ -139,35 +146,71 @@
             let db = await getDatabase();
             if(document.getElementById('user-count')) document.getElementById('user-count').innerText = (db.users || []).length;
             
+            // Üyeler
             let uList = document.getElementById('users-list');
             if(uList) {
                 uList.innerHTML = db.users && db.users.length ? "" : "<p class='text-slate-600 text-xs'>Kayıtlı üye yok.</p>";
                 (db.users || []).forEach(u => uList.innerHTML += `<div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs flex justify-between items-center text-slate-300"><span class="font-medium">👤 ${u.username}</span></div>`);
             }
 
-            let oList = document.getElementById('orders-list');
-            if(oList) {
-                let orders = db.orders || [];
-                oList.innerHTML = orders.length ? "" : "<p class='text-slate-600 text-xs'>Bekleyen bildirim yok.</p>";
-                orders.forEach((o, index) => {
-                    let badgeColor = o.status === 'Onaylandı' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-                    oList.innerHTML += `
-                        <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 text-xs space-y-2">
-                            <div class="flex justify-between items-center font-bold text-white"><span>Müşteri: ${o.username}</span><span class="px-2.5 py-0.5 rounded-full text-[10px] border ${badgeColor}">${o.status}</span></div>
+            // BEKLEYEN SİPARİŞLER
+            let pendingList = document.getElementById('pending-orders-list');
+            let orders = db.orders || [];
+            let pendingOrders = orders.filter(o => o.status === 'Bekliyor');
+            if(pendingList) {
+                pendingList.innerHTML = pendingOrders.length ? "" : "<p class='text-slate-600 text-xs'>Bekleyen bildirim yok.</p>";
+                pendingOrders.forEach((o) => {
+                    let realIndex = orders.indexOf(o);
+                    pendingList.innerHTML += `
+                        <div class="bg-slate-900 p-3 rounded-xl border border-amber-500/20 text-xs space-y-2">
+                            <div class="font-bold text-white">Müşteri: ${o.username}</div>
                             <p class="text-slate-400 text-[11px]">Arşiv: ${o.items} (${o.total})</p>
-                            ${o.status === 'Bekliyor' ? `<button onclick="openReceiptModal(${index})" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs transition border border-slate-700">Dekontu İncele & Onayla</button>` : '<span class="text-[10px] text-emerald-400 font-bold">Onaylandı</span>'}
+                            <button onclick="openReceiptModal(${realIndex})" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-lg text-xs transition border border-slate-700">Dekontu İncele & Karar Ver</button>
                         </div>`;
                 });
             }
 
+            // ONAYLANAN GEÇMİŞ
+            let approvedList = document.getElementById('approved-orders-list');
+            let approvedOrders = orders.filter(o => o.status === 'Onaylandı');
+            if(approvedList) {
+                approvedList.innerHTML = approvedOrders.length ? "" : "<p class='text-slate-600 text-xs'>Onaylanan işlem yok.</p>";
+                approvedOrders.forEach((o) => {
+                    approvedList.innerHTML += `
+                        <div class="bg-slate-900 p-3 rounded-xl border border-emerald-500/20 text-xs space-y-1">
+                            <div class="font-bold text-white">Müşteri: ${o.username}</div>
+                            <p class="text-slate-400 text-[11px]">Arşiv: ${o.items} (${o.total})</p>
+                            <span class="text-[10px] text-emerald-400 font-bold block pt-1">✔ Onaylandı ve Açıldı</span>
+                        </div>`;
+                });
+            }
+
+            // ÜRÜNLERİ LİSTELEME VE SİLME
+            let prodList = document.getElementById('admin-products-list');
+            let products = db.products || [];
+            if(prodList) {
+                if(products.length === 0) { prodList.innerHTML = `<p class='text-slate-600 text-xs'>Yayınlanan arşiv yok.</p>`; }
+                else {
+                    prodList.innerHTML = '';
+                    products.forEach((p, i) => {
+                        prodList.innerHTML += `
+                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                                <div><span class="font-bold text-slate-200">${p.title}</span><div class="text-slate-500 text-[10px]">${p.category} - ${p.price} ₺</div></div>
+                                <button onclick="deleteProduct(${i})" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 py-1 rounded-lg transition font-semibold text-[10px]">Sil</button>
+                            </div>`;
+                    });
+                }
+            }
+
+            // HESAPLAR
             let accList = document.getElementById('admin-accounts-list');
+            let accounts = db.accounts || [];
             if(accList) {
-                let accounts = db.accounts || [];
                 if(accounts.length === 0) { accList.innerHTML = `<p class='text-slate-600 text-xs'>Kayıtlı hesap yok.</p>`; } 
                 else {
                     accList.innerHTML = '';
                     accounts.forEach((acc, i) => {
-                        accList.innerHTML += `<div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs"><div><span class="font-bold text-slate-200">${acc.name}</span><div class="text-slate-500 font-mono text-[10px] truncate max-w-[180px]">${acc.detail}</div></div><button onclick="deleteAccount(${i})" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 py-1 rounded-lg transition font-semibold text-[10px]">Sil</button></div>`;
+                        accList.innerHTML += `<div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs"><div><span class="font-bold text-slate-200">${acc.name}</span><div class="text-slate-500 font-mono text-[10px] truncate max-w-[150px]">${acc.detail}</div></div><button onclick="deleteAccount(${i})" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 py-1 rounded-lg transition font-semibold text-[10px]">Sil</button></div>`;
                     });
                 }
             }
@@ -181,7 +224,12 @@
             if(order.receipt && order.receipt.length > 50) {
                 container.innerHTML = `<img src="${order.receipt}" class="max-h-80 max-w-full object-contain rounded-lg">`;
             } else { container.innerHTML = `<div class="text-slate-400 text-xs p-4">Dekont görseli yok.</div>`; }
-            document.getElementById('receipt-actions').innerHTML = `<button onclick="approveOrder(${index})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20">Dekontu Onayla & Kilidi Aç</button>`;
+            
+            // ONAYLA VE REDDET BUTONLARI
+            document.getElementById('receipt-actions').innerHTML = `
+                <button onclick="approveOrder(${index})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20">Ödemeyi Onayla & Kilidi Aç</button>
+                <button onclick="rejectOrder(${index})" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg shadow-red-600/20">Ödemeyi Reddet & Bildirimi Sil</button>
+            `;
         }
 
         function closeReceiptModal() { document.getElementById('receipt-modal').classList.add('hidden'); }
@@ -190,12 +238,30 @@
             let db = await getDatabase();
             db.orders[index].status = 'Onaylandı';
             await saveDatabase(db);
-            alert("Ödeme onaylandı! Kullanıcının arşivi açıldı.");
+            alert("Ödeme onaylandı!");
             closeReceiptModal();
             loadData();
         }
 
-        // FOTOĞRAFI OTOMATİK KÜÇÜLTEN VE SIKIŞTIRAN FONKSİYON
+        async function rejectOrder(index) {
+            if(!confirm("Bu ödeme bildirimini reddetmek istediğinize emin misiniz?")) return;
+            let db = await getDatabase();
+            db.orders.splice(index, 1); // Bildirimi tamamen siler
+            await saveDatabase(db);
+            alert("Ödeme bildirimi reddedildi ve silindi.");
+            closeReceiptModal();
+            loadData();
+        }
+
+        async function deleteProduct(index) {
+            if(!confirm("Bu arşivi siteden kalıcı olarak silmek istiyor musunuz?")) return;
+            let db = await getDatabase();
+            db.products.splice(index, 1);
+            await saveDatabase(db);
+            alert("Arşiv silindi!");
+            loadData();
+        }
+
         function compressImage(file, callback) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -204,25 +270,14 @@
                 img.src = event.target.result;
                 img.onload = function () {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; // Genişliği otomatik optimize eder
-                    const MAX_HEIGHT = 400;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                    } else {
-                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
+                    const MAX_WIDTH = 600; const MAX_HEIGHT = 400;
+                    let width = img.width; let height = img.height;
+                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+                    else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                    canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Kaliteyi %70'e düşürerek boyutu ufaltsın ve veritabanını yormasın
-                    let compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    callback(compressedDataUrl);
+                    callback(canvas.toDataURL('image/jpeg', 0.7));
                 }
             }
         }
@@ -234,10 +289,7 @@
             let videoLink = document.getElementById('new-video-link').value.trim();
             let imageFile = document.getElementById('new-image').files[0];
 
-            if(!title || price === "" || !videoLink) { 
-                alert("Lütfen başlık, fiyat ve video linkini eksiksiz doldurun!"); 
-                return; 
-            }
+            if(!title || price === "" || !videoLink) { alert("Lütfen başlık, fiyat ve video linkini doldurun!"); return; }
 
             if(imageFile) {
                 compressImage(imageFile, async function(compressedImgUrl) {
@@ -251,18 +303,9 @@
         async function saveProductToDB(title, category, price, videoLink, imageUrl) {
             let db = await getDatabase();
             if(!db.products) db.products = [];
-            
-            db.products.push({
-                id: 'prod_' + Date.now(),
-                title: title,
-                category: category,
-                price: price,
-                videoLink: videoLink,
-                image: imageUrl
-            });
-
+            db.products.push({ id: 'prod_' + Date.now(), title, category, price, videoLink, image: imageUrl });
             await saveDatabase(db);
-            alert("Arşiv başarıyla yayınlandı!");
+            alert("Arşiv yayınlandı!");
             location.reload();
         }
 
@@ -270,17 +313,17 @@
             let name = document.getElementById('acc-name').value.trim();
             let type = document.getElementById('acc-type').value;
             let detail = document.getElementById('acc-detail').value.trim();
-            if(!name || !detail) { alert("Lütfen alanları doldurun!"); return; }
+            if(!name || !detail) { alert("Doldurun!"); return; }
             let db = await getDatabase();
             if(!db.accounts) db.accounts = [];
             db.accounts.push({ id: 'acc_' + Date.now(), name, type, detail });
             await saveDatabase(db);
-            alert("Ödeme hesabı eklendi!");
+            alert("Hesap eklendi!");
             loadData();
         }
 
         async function deleteAccount(index) {
-            if(!confirm("Bu hesabı silmek istiyor musunuz?")) return;
+            if(!confirm("Silmek istiyor musunuz?")) return;
             let db = await getDatabase();
             db.accounts.splice(index, 1);
             await saveDatabase(db);
