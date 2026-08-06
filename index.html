@@ -60,9 +60,10 @@
         </div>
     </main>
 
-    <!-- Auth Modal -->
-    <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <!-- Auth Modal (Artık varsayılan olarak gizli "hidden" class'ı var) -->
+    <div id="auth-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md rounded-3xl p-8 border border-slate-800 relative shadow-2xl">
+            <button onclick="hideAuthModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
             <div class="text-center mb-6">
                 <h3 id="auth-title" class="text-xl font-bold text-white">Giriş Yap</h3>
             </div>
@@ -120,6 +121,9 @@
 
         window.onload = function() { checkSession(); loadStoreData(); checkUserDownloads(); }
 
+        function showAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
+        function hideAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
+
         function switchAuthMode() {
             isRegister = !isRegister;
             document.getElementById('auth-title').innerText = isRegister ? "Yeni Hesap Oluştur" : "Giriş Yap";
@@ -174,6 +178,20 @@
             renderProducts();
         }
 
+        // YENİ: Giriş kontrolü yapan aksiyon fonksiyonu
+        function handleProductAction(type, link, title, price, id) {
+            if (!currentUser) {
+                showAuthModal();
+                return;
+            }
+            
+            if (type === 'free') {
+                window.open(link, '_blank');
+            } else if (type === 'paid') {
+                addToCart(title, price, id);
+            }
+        }
+
         function renderProducts() {
             let grid = document.getElementById('products-grid');
             if(!grid) return;
@@ -197,9 +215,11 @@
                 let priceText = isFree ? '<span class="text-emerald-400 font-bold">Ücretsiz</span>' : `<span class="text-emerald-400 font-bold">${p.price} ₺</span>`;
                 
                 let realLink = p.videoLink || '#';
+                
+                // YENİ: Butonlar artık handleProductAction'a gidiyor, o da girişi kontrol ediyor.
                 let btnAction = isFree 
-                    ? `<button onclick="window.open('${realLink}', '_blank')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-emerald-600/20">Hemen İzle / İndir</button>` 
-                    : `<button onclick="addToCart('${p.title}', '${p.price}', '${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-red-600/20">Sepete Ekle</button>`;
+                    ? `<button onclick="handleProductAction('free', '${realLink}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-emerald-600/20">Hemen İzle / İndir</button>` 
+                    : `<button onclick="handleProductAction('paid', null, '${p.title}', '${p.price}', '${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-red-600/20">Sepete Ekle</button>`;
 
                 grid.innerHTML += `
                     <div class="glass rounded-3xl p-5 flex flex-col justify-between card-hover animate-fade">
@@ -241,7 +261,7 @@
                 if(db.users.some(u => u.username === username)) { alert("Kullanıcı adı alınmış!"); return; }
                 db.users.push({ username, password: pass });
                 await saveDatabase(db);
-                alert("Kayıt başarılı!"); switchAuthMode();
+                alert("Kayıt başarılı! Lütfen şimdi giriş yapın."); switchAuthMode();
             } else {
                 let user = db.users.find(u => u.username === username && u.password === pass);
                 if(user) {
@@ -251,11 +271,15 @@
             }
         }
 
+        // YENİ: Check session güncellendi, başlangıçta modalı ekrana yapıştırmıyor.
         function checkSession() {
             if(currentUser) {
                 document.getElementById('auth-modal').classList.add('hidden');
                 document.getElementById('user-display').innerHTML = `<span class="text-slate-500">Üye:</span> <strong class="text-slate-200">${currentUser.username}</strong> | <button onclick="logout()" class="text-red-500 hover:underline ml-1 font-bold">Çıkış</button>`;
-            } else { document.getElementById('auth-modal').classList.remove('hidden'); }
+            } else {
+                document.getElementById('auth-modal').classList.add('hidden');
+                document.getElementById('user-display').innerHTML = `<button onclick="showAuthModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg shadow-red-600/20">Giriş Yap</button>`;
+            }
         }
 
         function logout() { localStorage.removeItem('heisenberg_user'); location.reload(); }
@@ -288,7 +312,6 @@
             }
         }
 
-        // KÖKTEN ÇÖZÜM: RESMİ MİKRO BOYUTA SIKIŞTIRAN ÖZEL FONKSİYON (DIŞ SUNUCU YOK, HATA YOK)
         function compressReceiptExtreme(file, callback) {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -298,7 +321,6 @@
                 img.onload = function () {
                     const canvas = document.createElement('canvas');
                     
-                    // Boyutu iyice ufaltıyoruz ki veritabanı "büyük dosya" uyarısı vermesin
                     const MAX_WIDTH = 400; 
                     const MAX_HEIGHT = 600;
                     let width = img.width; 
@@ -314,7 +336,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Kaliteyi %40'a düşürüyoruz. Sadece bir dekont olduğu için yazılar okunur, ama dosya çok küçük olur.
                     let ultraSmallBase64 = canvas.toDataURL('image/jpeg', 0.4);
                     callback(ultraSmallBase64);
                 }
@@ -322,7 +343,7 @@
         }
 
         async function checkout() {
-            if (!currentUser) { alert("Lütfen önce giriş yapın!"); return; }
+            if (!currentUser) { showAuthModal(); return; }
 
             const fileInput = document.getElementById('receipt-file');
             const btn = document.getElementById('checkout-btn');
@@ -337,7 +358,6 @@
             try {
                 let file = fileInput.files[0];
                 
-                // Resmi alıp mikro boyuta sıkıştırıyoruz
                 compressReceiptExtreme(file, async function(microBase64) {
                     try {
                         let db = await getDatabase();
@@ -349,7 +369,7 @@
                             items: cart.map(i => i.name).join(", "),
                             total: cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺",
                             status: 'Bekliyor', 
-                            receipt: microBase64 // Küçücük yapılmış görseli kaydediyoruz
+                            receipt: microBase64 
                         });
 
                         await saveDatabase(db);

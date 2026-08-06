@@ -45,7 +45,7 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Video Ekleme Paneli (Sadece Link) -->
+            <!-- Video Ekleme Paneli -->
             <div class="glass rounded-3xl p-6 md:p-8 border border-slate-800/80 space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4 text-red-600"></i> Yeni Arşiv Videosu Ekle
@@ -59,20 +59,24 @@
                         <option value="Mega Paket">Mega Paket</option>
                         <option value="Sinema & Dizi">Sinema & Dizi</option>
                     </select>
-                    <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
+                    <input type="number" id="new-price" placeholder="Fiyat (₺) (Ücretsiz için 0 yazın)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                     
                     <input type="text" id="new-video-link" placeholder="Video İzleme/İndirme Linki (Streamable, Drive, Yandex vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
 
+                    <!-- DEĞİŞİKLİK BURADA: Sınırı aşmamak için fotoğraf yüklemek yerine Link giriyoruz -->
                     <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin (Otomatik Sıkıştırılır):</label>
-                        <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
+                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı URL (HızlıResim, Imgur vb. linki girin):</label>
+                        <input type="text" id="new-image-url" placeholder="Örn: https://i.hizliresim.com/xxx.jpg" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
+                        <p class="text-[9px] text-slate-500 mt-1">* Veritabanı sınırını aşmamak için fotoğraf dosyasını değil, linkini girmeniz zorunludur.</p>
                     </div>
                 </div>
                 <button id="publish-btn" onclick="addNewProduct()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20">Arşivi Yayınla</button>
                 
                 <div class="mt-4 pt-4 border-t border-slate-800">
                     <h4 class="text-[11px] font-bold text-slate-400 uppercase mb-2">Yayınlanan Arşivler & Silme:</h4>
-                    <div id="admin-products-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                    <div id="admin-products-list" class="space-y-2"></div>
+                    <!-- Admin Paneli Ürün Sayfalama -->
+                    <div id="admin-pagination" class="flex justify-center gap-1 mt-4"></div>
                 </div>
             </div>
 
@@ -124,7 +128,10 @@
         const BIN_ID = '6a73c66cf5f4af5e29f07574';
         const MASTER_KEY = '$2a$10$zh2aEsam0mcpeFIrGF40pekMKtzirnqXSEFm27I6NOa1SGFR9bkG.';
 
-        // SAYFA YÜKLENDİĞİNDE OTURUMU KONTROL ET
+        let globalDB = null; // Veritabanını hafızada tutmak için
+        let adminProductsCurrentPage = 1;
+        const adminProductsPerPage = 12;
+
         window.onload = function() {
             if(sessionStorage.getItem('heisenberg_admin_auth') === 'true') {
                 document.getElementById('admin-login-modal').classList.add('hidden');
@@ -135,7 +142,6 @@
 
         function loginAdmin() {
             if(document.getElementById('admin-pass').value === "MagnostakHeisenberg6767") {
-                // Şifre doğruysa oturumu hafızaya al
                 sessionStorage.setItem('heisenberg_admin_auth', 'true');
                 document.getElementById('admin-login-modal').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
@@ -146,7 +152,6 @@
         }
 
         function logoutAdmin() {
-            // Çıkış yapınca hafızadaki oturumu sil
             sessionStorage.removeItem('heisenberg_admin_auth');
             location.reload();
         }
@@ -168,7 +173,9 @@
         }
 
         async function loadData() {
-            let db = await getDatabase();
+            globalDB = await getDatabase();
+            let db = globalDB;
+
             if(document.getElementById('user-count')) document.getElementById('user-count').innerText = (db.users || []).length;
             
             let uList = document.getElementById('users-list');
@@ -207,21 +214,8 @@
                 });
             }
 
-            let prodList = document.getElementById('admin-products-list');
-            let products = db.products || [];
-            if(prodList) {
-                if(products.length === 0) { prodList.innerHTML = `<p class='text-slate-600 text-xs'>Yayınlanan arşiv yok.</p>`; }
-                else {
-                    prodList.innerHTML = '';
-                    products.forEach((p, i) => {
-                        prodList.innerHTML += `
-                            <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                                <div><span class="font-bold text-slate-200">${p.title}</span><div class="text-slate-500 text-[10px]">${p.category} - ${p.price} ₺</div></div>
-                                <button onclick="deleteProduct(${i})" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 py-1 rounded-lg transition font-semibold text-[10px]">Sil</button>
-                            </div>`;
-                    });
-                }
-            }
+            // Sayfalamalı Ürün Listesini Çalıştır
+            renderAdminProducts();
 
             let accList = document.getElementById('admin-accounts-list');
             let accounts = db.accounts || [];
@@ -236,8 +230,46 @@
             }
         }
 
+        // YENİ: Admin Paneli Ürünleri İçin Sayfalama Sistemi
+        function renderAdminProducts() {
+            let products = globalDB.products || [];
+            let prodList = document.getElementById('admin-products-list');
+            let paginationDiv = document.getElementById('admin-pagination');
+
+            if(products.length === 0) { 
+                prodList.innerHTML = `<p class='text-slate-600 text-xs'>Yayınlanan arşiv yok.</p>`; 
+                paginationDiv.innerHTML = '';
+                return; 
+            }
+
+            let totalPages = Math.ceil(products.length / adminProductsPerPage);
+            if (adminProductsCurrentPage > totalPages) adminProductsCurrentPage = totalPages;
+            
+            let start = (adminProductsCurrentPage - 1) * adminProductsPerPage;
+            let pagedItems = products.slice(start, start + adminProductsPerPage);
+
+            prodList.innerHTML = '';
+            pagedItems.forEach((p, idx) => {
+                let realIndex = start + idx; // Gerçek silme indexini hesaplıyoruz
+                prodList.innerHTML += `
+                    <div class="bg-slate-900 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
+                        <div><span class="font-bold text-slate-200">${p.title}</span><div class="text-slate-500 text-[10px]">${p.category} - ${p.price} ₺</div></div>
+                        <button onclick="deleteProduct(${realIndex})" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white px-2.5 py-1 rounded-lg transition font-semibold text-[10px]">Sil</button>
+                    </div>`;
+            });
+
+            // Sayfalama Butonları
+            paginationDiv.innerHTML = '';
+            if (totalPages > 1) {
+                for(let i = 1; i <= totalPages; i++) {
+                    let activeClass = i === adminProductsCurrentPage ? 'bg-red-600 text-white font-bold' : 'bg-slate-800 text-slate-400 hover:bg-slate-700';
+                    paginationDiv.innerHTML += `<button onclick="adminProductsCurrentPage = ${i}; renderAdminProducts();" class="px-2.5 py-1 rounded-lg transition text-[11px] ${activeClass}">${i}</button>`;
+                }
+            }
+        }
+
         async function openReceiptModal(index) {
-            let db = await getDatabase();
+            let db = globalDB;
             let order = db.orders[index];
             document.getElementById('receipt-modal').classList.remove('hidden');
             let container = document.getElementById('receipt-img-container');
@@ -254,9 +286,8 @@
         function closeReceiptModal() { document.getElementById('receipt-modal').classList.add('hidden'); }
 
         async function approveOrder(index) {
-            let db = await getDatabase();
-            db.orders[index].status = 'Onaylandı';
-            await saveDatabase(db);
+            globalDB.orders[index].status = 'Onaylandı';
+            await saveDatabase(globalDB);
             alert("Ödeme onaylandı!");
             closeReceiptModal();
             loadData();
@@ -264,9 +295,8 @@
 
         async function rejectOrder(index) {
             if(!confirm("Bu ödeme bildirimini reddetmek istediğinize emin misiniz?")) return;
-            let db = await getDatabase();
-            db.orders.splice(index, 1);
-            await saveDatabase(db);
+            globalDB.orders.splice(index, 1);
+            await saveDatabase(globalDB);
             alert("Ödeme bildirimi reddedildi ve silindi.");
             closeReceiptModal();
             loadData();
@@ -274,31 +304,15 @@
 
         async function deleteProduct(index) {
             if(!confirm("Bu arşivi siteden kalıcı olarak silmek istiyor musunuz?")) return;
-            let db = await getDatabase();
-            db.products.splice(index, 1);
-            await saveDatabase(db);
+            globalDB.products.splice(index, 1);
+            await saveDatabase(globalDB);
             alert("Arşiv silindi!");
-            loadData();
-        }
-
-        function compressImage(file, callback) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function (event) {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = function () {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; const MAX_HEIGHT = 400;
-                    let width = img.width; let height = img.height;
-                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
-                    else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    callback(canvas.toDataURL('image/jpeg', 0.7));
-                }
+            
+            // Eğer sildiğimiz ürün o sayfanın son ürünüyse bir önceki sayfaya geç
+            if (globalDB.products.length % adminProductsPerPage === 0 && adminProductsCurrentPage > 1) {
+                adminProductsCurrentPage--;
             }
+            loadData();
         }
 
         async function addNewProduct() {
@@ -306,32 +320,30 @@
             let category = document.getElementById('new-category').value;
             let price = document.getElementById('new-price').value.trim();
             let videoLink = document.getElementById('new-video-link').value.trim();
-            let imageFile = document.getElementById('new-image').files[0];
+            let imageUrl = document.getElementById('new-image-url').value.trim(); // Yeni eklenen kısım
 
             if(!title || price === "" || !videoLink) { 
                 alert("Lütfen başlık, fiyat ve video linkini eksiksiz doldurun!"); 
                 return; 
             }
 
+            // URL boş bırakıldıysa varsayılan (örnek) bir kapak fotoğrafı koy
+            if(!imageUrl) {
+                imageUrl = 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500';
+            }
+
             let publishBtn = document.getElementById('publish-btn');
             publishBtn.innerText = "Yayınlanıyor...";
             publishBtn.disabled = true;
 
-            if(imageFile) {
-                compressImage(imageFile, async function(compressedImgUrl) {
-                    await saveProductToDB(title, category, price, videoLink, compressedImgUrl);
-                });
-            } else {
-                await saveProductToDB(title, category, price, videoLink, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
-            }
+            await saveProductToDB(title, category, price, videoLink, imageUrl);
         }
 
         async function saveProductToDB(title, category, price, videoLink, imageUrl) {
             try {
-                let db = await getDatabase();
-                if(!db.products) db.products = [];
+                if(!globalDB.products) globalDB.products = [];
                 
-                db.products.push({
+                globalDB.products.unshift({ // Yeni eklenenler en üste gelsin diye unshift kullandık (push yerine)
                     id: 'prod_' + Date.now(),
                     title: title,
                     category: category,
@@ -340,13 +352,14 @@
                     image: imageUrl
                 });
 
-                await saveDatabase(db);
+                await saveDatabase(globalDB);
                 alert("Arşiv başarıyla yayınlandı!");
                 location.reload();
             } catch (error) {
                 alert("Bir hata oluştu. Lütfen tekrar deneyin.");
-                document.getElementById('publish-btn').innerText = "Arşivi Yayınla";
-                document.getElementById('publish-btn').disabled = false;
+                let btn = document.getElementById('publish-btn');
+                btn.innerText = "Arşivi Yayınla";
+                btn.disabled = false;
             }
         }
 
@@ -355,19 +368,17 @@
             let type = document.getElementById('acc-type').value;
             let detail = document.getElementById('acc-detail').value.trim();
             if(!name || !detail) { alert("Lütfen alanları doldurun!"); return; }
-            let db = await getDatabase();
-            if(!db.accounts) db.accounts = [];
-            db.accounts.push({ id: 'acc_' + Date.now(), name, type, detail });
-            await saveDatabase(db);
+            if(!globalDB.accounts) globalDB.accounts = [];
+            globalDB.accounts.push({ id: 'acc_' + Date.now(), name, type, detail });
+            await saveDatabase(globalDB);
             alert("Ödeme hesabı eklendi!");
             loadData();
         }
 
         async function deleteAccount(index) {
             if(!confirm("Bu hesabı silmek istiyor musunuz?")) return;
-            let db = await getDatabase();
-            db.accounts.splice(index, 1);
-            await saveDatabase(db);
+            globalDB.accounts.splice(index, 1);
+            await saveDatabase(globalDB);
             loadData();
         }
     </script>
