@@ -64,9 +64,9 @@
                     <!-- 1. Seçenek: Video Linki -->
                     <input type="text" id="new-video-link" placeholder="Video Linki (Streamable, Drive, Yandex vb. isteğe bağlı)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
                     
-                    <!-- 2. Seçenek: Bilgisayardan Doğrudan Video Dosyası -->
+                    <!-- 2. Seçenek: Klasörden Doğrudan Video Dosyası -->
                     <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Veya Bilgisayarından Video Dosyası Seç (.mp4, .mkv vb.):</label>
+                        <label class="block text-[10px] text-slate-400 mb-1">Veya Klasörden Video Dosyası Seç (.mp4, .mkv vb.):</label>
                         <input type="file" id="new-video-file" accept="video/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-800 file:text-white cursor-pointer">
                     </div>
 
@@ -297,28 +297,23 @@
 
             if(!title || price === "") { alert("Lütfen başlık ve fiyat alanlarını doldurun!"); return; }
 
-            // Eğer bilgisayardan video dosyası seçildiyse onu okuyup işle
+            // Eğer bilgisayardan video dosyası seçildiyse güvenli URL (Blob) oluşturuyoruz
+            let finalVideoSource = videoLink;
             if(videoFile) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    let videoDataUrl = e.target.result;
-                    processCoverImageAndSave(title, category, price, videoDataUrl, imageFile);
-                };
-                reader.readAsDataURL(videoFile);
-            } else if(videoLink) {
-                processCoverImageAndSave(title, category, price, videoLink, imageFile);
-            } else {
-                alert("Lütfen bir video linki girin veya bilgisayarınızdan video dosyası seçin!");
+                finalVideoSource = URL.createObjectURL(videoFile);
             }
-        }
 
-        function processCoverImageAndSave(title, category, price, videoSource, imageFile) {
+            if(!finalVideoSource) {
+                alert("Lütfen bir video linki girin veya bilgisayardan video dosyası seçin!");
+                return;
+            }
+
             if(imageFile) {
                 compressImage(imageFile, async function(compressedImgUrl) {
-                    await saveProductToDB(title, category, price, videoSource, compressedImgUrl);
+                    await saveProductToDB(title, category, price, finalVideoSource, compressedImgUrl);
                 });
             } else {
-                saveProductToDB(title, category, price, videoSource, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
+                await saveProductToDB(title, category, price, finalVideoSource, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
             }
         }
 
