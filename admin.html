@@ -39,13 +39,13 @@
         <div class="glass rounded-3xl p-6 flex justify-between items-center border border-slate-800/80">
             <div>
                 <h1 class="text-lg font-bold text-white">⚙️ Heisenberg Yönetim Paneli</h1>
-                <p class="text-slate-500 text-xs">Arşiv yönetimi, doğrudan video kaydı ve ödeme kontrol merkezi.</p>
+                <p class="text-slate-500 text-xs">Arşiv yönetimi, video linki ekleme, ürün silme ve ödeme onay merkezi.</p>
             </div>
             <button onclick="location.reload()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition text-slate-300">Çıkış Yap</button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Video ve Dosya Ekleme Paneli -->
+            <!-- Video Ekleme Paneli -->
             <div class="glass rounded-3xl p-6 md:p-8 border border-slate-800/80 space-y-4">
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4 text-red-600"></i> Yeni Arşiv Videosu Ekle
@@ -61,17 +61,11 @@
                     </select>
                     <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
                     
-                    <!-- 1. Seçenek: Video Linki -->
-                    <input type="text" id="new-video-link" placeholder="Veya Video Linki (Streamable, Drive vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
-                    
-                    <!-- 2. Seçenek: Bilgisayardan/Klasörden Video Dosyası -->
-                    <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Doğrudan Video Dosyası Seç (.mp4 vb.):</label>
-                        <input type="file" id="new-video-file" accept="video/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-800 file:text-white cursor-pointer">
-                    </div>
+                    <!-- Stabil Video Linki -->
+                    <input type="text" id="new-video-link" placeholder="Video İzleme/İndirme Linki (Streamable, Drive, Yandex vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
 
                     <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin:</label>
+                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin (Otomatik Sıkıştırılır):</label>
                         <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
                     </div>
                 </div>
@@ -292,39 +286,35 @@
             let category = document.getElementById('new-category').value;
             let price = document.getElementById('new-price').value.trim();
             let videoLink = document.getElementById('new-video-link').value.trim();
-            let videoFile = document.getElementById('new-video-file').files[0];
             let imageFile = document.getElementById('new-image').files[0];
 
-            if(!title || price === "") { alert("Lütfen başlık ve fiyat alanlarını doldurun!"); return; }
-
-            if(videoFile) {
-                const reader = new FileReader();
-                reader.readAsDataURL(videoFile);
-                reader.onload = function(e) {
-                    let videoBase64 = e.target.result;
-                    processCoverAndSave(title, category, price, videoBase64, imageFile);
-                };
-            } else if(videoLink) {
-                processCoverAndSave(title, category, price, videoLink, imageFile);
-            } else {
-                alert("Lütfen bir video linki girin veya bilgisayardan video dosyası seçin!");
+            if(!title || price === "" || !videoLink) { 
+                alert("Lütfen başlık, fiyat ve video linkini eksiksiz doldurun!"); 
+                return; 
             }
-        }
 
-        function processCoverAndSave(title, category, price, videoSource, imageFile) {
             if(imageFile) {
                 compressImage(imageFile, async function(compressedImgUrl) {
-                    await saveProductToDB(title, category, price, videoSource, compressedImgUrl);
+                    await saveProductToDB(title, category, price, videoLink, compressedImgUrl);
                 });
             } else {
-                saveProductToDB(title, category, price, videoSource, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
+                await saveProductToDB(title, category, price, videoLink, 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500');
             }
         }
 
-        async function saveProductToDB(title, category, price, videoSource, imageUrl) {
+        async function saveProductToDB(title, category, price, videoLink, imageUrl) {
             let db = await getDatabase();
             if(!db.products) db.products = [];
-            db.products.push({ id: 'prod_' + Date.now(), title, category, price, videoLink: videoSource, image: imageUrl });
+            
+            db.products.push({
+                id: 'prod_' + Date.now(),
+                title: title,
+                category: category,
+                price: price,
+                videoLink: videoLink,
+                image: imageUrl
+            });
+
             await saveDatabase(db);
             alert("Arşiv başarıyla yayınlandı!");
             location.reload();
