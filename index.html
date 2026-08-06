@@ -59,7 +59,7 @@
         <!-- Sayfalama -->
         <div id="pagination-container" class="flex justify-center items-center gap-2 mb-16"></div>
 
-        <!-- İndirme Paneli (Gerçek İndirme Fonksiyonu) -->
+        <!-- İndirme Paneli -->
         <div id="downloads-section" class="glass rounded-3xl p-6 hidden border border-slate-800/80 mb-12 animate-fade">
             <h3 class="text-xs font-bold mb-4 flex items-center gap-2 text-emerald-400">
                 <i data-lucide="check-circle-2" class="w-4 h-4"></i> Onaylanan ve Kalıcı Olarak Erişilebilir Arşivleriniz
@@ -175,9 +175,7 @@
             if(allProducts.length === 0) {
                 allProducts = [
                     { id: 'p0', title: 'Ücretsiz Örnek Demo Video', category: 'Ücretsiz', price: '0', image: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500' },
-                    { id: 'p1', title: 'Özel Eğlence Vol. 1', category: 'Özel Eğlence', price: '150', image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500' },
-                    { id: 'p2', title: 'Gece Serisi Özel Set', category: 'Gece Serisi', price: '250', image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500' },
-                    { id: 'p3', title: 'Mega Paket Arşivi', category: 'Mega Paket', price: '400', image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500' }
+                    { id: 'p1', title: 'Özel Eğlence Vol. 1', category: 'Özel Eğlence', price: '150', image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500' }
                 ];
             }
             renderProducts();
@@ -187,22 +185,13 @@
         function renderPaymentAccounts(accounts) {
             let container = document.getElementById('payment-accounts-list');
             if(!accounts || accounts.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 font-mono">
-                        TR00 0000 0000 0000 0000 0000 00 (Varsayılan IBAN - Muhsin B.)
-                    </div>
-                `;
+                container.innerHTML = `<div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 font-mono">TR00 0000 0000 0000 0000 0000 00 (Varsayılan IBAN)</div>`;
                 return;
             }
             container.innerHTML = '';
             accounts.forEach(acc => {
                 let icon = acc.type === 'Kripto' ? '🪙' : '🏦';
-                container.innerHTML += `
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
-                        <div class="font-bold text-slate-200">${icon} ${acc.name} (${acc.type})</div>
-                        <div class="font-mono text-slate-400 select-all">${acc.detail}</div>
-                    </div>
-                `;
+                container.innerHTML += `<div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1"><div class="font-bold text-slate-200">${icon} ${acc.name}</div><div class="font-mono text-slate-400 select-all">${acc.detail}</div></div>`;
             });
         }
 
@@ -223,10 +212,10 @@
 
         function renderProducts() {
             let grid = document.getElementById('products-grid');
+            if(!grid) return;
             grid.innerHTML = '';
             
             let filtered = currentCategory === 'Tümü' ? allProducts : allProducts.filter(p => p.category === currentCategory);
-            
             let totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
             if(currentPage > totalPages) currentPage = totalPages;
             
@@ -234,7 +223,7 @@
             let paginatedItems = filtered.slice(start, start + itemsPerPage);
             
             if(paginatedItems.length === 0) {
-                grid.innerHTML = `<div class="col-span-3 text-center py-16 text-slate-500 text-xs">Bu kategori sayfasında henüz arşiv bulunmuyor.</div>`;
+                grid.innerHTML = `<div class="col-span-3 text-center py-16 text-slate-500 text-xs">Bu kategoride arşiv bulunmuyor.</div>`;
                 document.getElementById('pagination-container').innerHTML = '';
                 return;
             }
@@ -242,7 +231,7 @@
             paginatedItems.forEach(p => {
                 let isFree = p.price === '0' || p.price === 0;
                 let priceText = isFree ? '<span class="text-emerald-400 font-bold">Ücretsiz</span>' : `<span class="text-emerald-400 font-bold">${p.price} ₺</span>`;
-                let btnAction = isFree ? `<button onclick="claimFree('${p.title}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-emerald-600/20">Hemen İndir</button>` : `<button onclick="addToCart('${p.title}', '${p.price}', '${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-red-600/20">Sepete Ekle</button>`;
+                let btnAction = isFree ? `<button onclick="claimFree('${p.title}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition">Hemen İndir</button>` : `<button onclick="addToCart('${p.title}', '${p.price}', '${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition">Sepete Ekle</button>`;
 
                 grid.innerHTML += `
                     <div class="glass rounded-3xl p-5 flex flex-col justify-between card-hover animate-fade">
@@ -252,7 +241,6 @@
                                 <span class="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold ${isFree ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 border-slate-800'} border">${p.category}</span>
                             </div>
                             <h3 class="font-bold text-sm mb-1 text-white">${p.title}</h3>
-                            <p class="text-slate-500 text-[11px] mb-4">${isFree ? 'Örnek tanıtım içeriği, anında erişim.' : 'Yüksek çözünürlüklü özel şifreli arşiv.'}</p>
                         </div>
                         <div class="flex items-center justify-between border-t border-slate-800/80 pt-4">
                             <span class="text-base">${priceText}</span>
@@ -261,18 +249,18 @@
                     </div>
                 `;
             });
-
             renderPagination(totalPages);
             lucide.createIcons();
         }
 
         function renderPagination(totalPages) {
             let pContainer = document.getElementById('pagination-container');
+            if(!pContainer) return;
             pContainer.innerHTML = '';
             if(totalPages <= 1) return;
 
             for(let i = 1; i <= totalPages; i++) {
-                let activeClass = i === currentPage ? 'bg-red-600 text-white font-bold shadow-lg shadow-red-600/20' : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white';
+                let activeClass = i === currentPage ? 'bg-red-600 text-white font-bold shadow-lg' : 'bg-slate-900 border border-slate-800 text-slate-400';
                 pContainer.innerHTML += `<button onclick="goToPage(${i})" class="px-3.5 py-2 rounded-xl text-xs transition ${activeClass}">${i}</button>`;
             }
         }
@@ -285,15 +273,11 @@
 
         function claimFree(title) {
             alert(`"${title}" başarıyla hesabınıza tanımlandı!`);
-            let downloads = document.getElementById('downloads-section');
-            downloads.classList.remove('hidden');
-            let container = document.getElementById('user-downloads');
             triggerRealDownload(title);
         }
 
-        // Gerçek dosya indirme tetikleyici fonksiyonu
         function triggerRealDownload(title) {
-            const sampleContent = "Heisenberg Secure Archive - İçerik: " + title + "\nTebrikler, bu şifrelenmiş özel arşiv başarıyla indirildi.";
+            const sampleContent = "Heisenberg Secure Archive - İçerik: " + title;
             const blob = new Blob([sampleContent], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -311,15 +295,11 @@
             if(!username || !pass) { alert("Lütfen tüm alanları doldurun!"); return; }
 
             let db = await getDatabase();
-
             if(isRegister) {
-                if(db.users.some(u => u.username === username)) {
-                    alert("Bu kullanıcı adı zaten alınmış!");
-                    return;
-                }
+                if(db.users.some(u => u.username === username)) { alert("Bu kullanıcı adı zaten alınmış!"); return; }
                 db.users.push({ username, password: pass });
                 await saveDatabase(db);
-                alert("Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
+                alert("Kayıt başarılı!");
                 switchAuthMode();
             } else {
                 let user = db.users.find(u => u.username === username && u.password === pass);
@@ -370,13 +350,12 @@
         async function checkout() {
             const fileInput = document.getElementById('receipt-file');
             if (cart.length === 0 || fileInput.files.length === 0) {
-                alert("Lütfen sepetinize ürün ekleyin ve ödeme dekontu görselini yükleyin!");
+                alert("Lütfen sepetinize ürün ekleyin ve ödeme dekontu yükleyin!");
                 return;
             }
 
             const file = fileInput.files[0];
             const reader = new FileReader();
-
             reader.onload = async function(e) {
                 let base64Image = e.target.result;
                 let itemsText = cart.map(i => i.name).join(", ");
@@ -393,11 +372,9 @@
                     receipt: base64Image
                 });
                 await saveDatabase(db);
-
-                alert("Ödeme bildiriminiz ve dekontunuz başarıyla iletildi! Admin onayından sonra arşiviniz kalıcı olarak açılacaktır.");
+                alert("Ödeme bildiriminiz iletildi!");
                 location.reload();
             };
-
             reader.readAsDataURL(file);
         }
 
@@ -407,17 +384,20 @@
             let myOrders = (db.orders || []).filter(o => o.username === currentUser.username && o.status === 'Onaylandı');
             
             if(myOrders.length > 0) {
-                document.getElementById('downloads-section').classList.remove('hidden');
+                let downloads = document.getElementById('downloads-section');
+                if(downloads) downloads.classList.remove('hidden');
                 let container = document.getElementById('user-downloads');
-                container.innerHTML = '';
-                myOrders.forEach(order => {
-                    container.innerHTML += `
-                        <div class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group">
-                            <span>📥 ${order.items}</span>
-                            <button onclick="triggerRealDownload('${order.items}')" class="text-emerald-400 hover:underline cursor-pointer bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">Arşivi İndir</button>
-                        </div>
-                    `;
-                });
+                if(container) {
+                    container.innerHTML = '';
+                    myOrders.forEach(order => {
+                        container.innerHTML += `
+                            <div class="flex items-center justify-between bg-slate-900 hover:bg-slate-800 border border-slate-800 p-3.5 rounded-2xl transition text-xs font-bold text-white group">
+                                <span>📥 ${order.items}</span>
+                                <button onclick="triggerRealDownload('${order.items}')" class="text-emerald-400 hover:underline cursor-pointer bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">Arşivi İndir</button>
+                            </div>
+                        `;
+                    });
+                }
             }
         }
     </script>
