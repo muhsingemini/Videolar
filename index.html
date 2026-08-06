@@ -141,7 +141,7 @@
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                 body: JSON.stringify(data)
             });
-            if(!res.ok) throw new Error("Veritabanı sınırı aşıldı veya bağlantı koptu.");
+            if(!res.ok) throw new Error("Veritabanı bağlantı hatası");
         }
 
         async function loadStoreData() {
@@ -288,22 +288,23 @@
             }
         }
 
-        // HATA ÖNLEYİCİ: RESMİ VERİTABANINA DEĞİL BULUTA YÜKLEYEN SİSTEM
+        // KESİN ÇÖZÜM: CLOUDINARY RESMİ DEMO API (CORS HATASI VERMEZ)
         async function uploadImageToCloud(file) {
             let formData = new FormData();
-            formData.append('reqtype', 'fileupload');
-            formData.append('fileToUpload', file);
+            formData.append('file', file);
+            formData.append('upload_preset', 'docs_upload_example_preset'); // Cloudinary'nin dışarıya açık, şifresiz test preseti
 
-            let response = await fetch("https://catbox.moe/user/api.php", {
+            let response = await fetch("https://api.cloudinary.com/v1_1/demo/image/upload", {
                 method: "POST",
                 body: formData
             });
 
             if (!response.ok) {
-                throw new Error("Resim bulut sunucusuna bağlanılamadı.");
+                throw new Error("Güvenlik duvarı engelledi. Resmi yüklerken hata oluştu.");
             }
 
-            return await response.text(); // Bize güvenli ve kısa bir resim linki döner
+            let data = await response.json();
+            return data.secure_url; // https ile başlayan güvenli resim linki döner
         }
 
         async function checkout() {
@@ -315,18 +316,19 @@
             if (cart.length === 0) { alert("Lütfen sepetinize arşiv ekleyin!"); return; }
             if (fileInput.files.length === 0) { alert("Lütfen ödeme dekontu görselini yükleyin!"); return; }
 
-            btn.innerText = "Dekont Buluta Yükleniyor, Bekleyin...";
+            btn.innerText = "Dekont Buluta Yükleniyor, Lütfen Bekleyin...";
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
             try {
-                // 1. Resmi buluta yükleyip kısa linkini alıyoruz
                 let file = fileInput.files[0];
+                
+                // 1. Resmi buluta (Cloudinary) yükleyip link alıyoruz
                 let receiptUrl = await uploadImageToCloud(file);
 
                 btn.innerText = "Sipariş Kaydediliyor...";
 
-                // 2. O kısa linki veritabanımıza kaydediyoruz (Veritabanı asla şişmiyor!)
+                // 2. Sadece linki JSONBin veritabanına kaydediyoruz
                 let db = await getDatabase();
                 if(!db.orders) db.orders = [];
                 
@@ -336,7 +338,7 @@
                     items: cart.map(i => i.name).join(", "),
                     total: cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺",
                     status: 'Bekliyor', 
-                    receipt: receiptUrl // Base64 koca kod yerine güvenli kısa link
+                    receipt: receiptUrl
                 });
 
                 await saveDatabase(db);
@@ -345,7 +347,7 @@
                 location.reload();
 
             } catch(e) {
-                alert("Hata oluştu: " + e.message + "\nLütfen tekrar deneyin.");
+                alert("Hata oluştu: " + e.message + "\n\nLütfen farklı bir fotoğraf seçin veya sayfayı yenileyin.");
                 btn.innerText = "Ödemeyi Bildir & Sipariş Oluştur";
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
