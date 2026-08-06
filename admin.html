@@ -39,7 +39,7 @@
         <div class="glass rounded-3xl p-6 flex justify-between items-center border border-slate-800/80">
             <div>
                 <h1 class="text-lg font-bold text-white">⚙️ Heisenberg Yönetim Paneli</h1>
-                <p class="text-slate-500 text-xs">Arşiv yönetimi, video linki ekleme, ürün silme ve ödeme onay merkezi.</p>
+                <p class="text-slate-500 text-xs">Arşiv yönetimi, kategori seçimi ve ödeme onay merkezi.</p>
             </div>
             <button onclick="location.reload()" class="bg-slate-900 border border-slate-800 hover:border-slate-700 px-4 py-2 rounded-xl text-xs font-semibold transition text-slate-300">Çıkış Yap</button>
         </div>
@@ -52,19 +52,21 @@
                 </h3>
                 <div class="space-y-3">
                     <input type="text" id="new-title" placeholder="Arşiv Başlığı (Örn: Özel Seri #1)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
+                    
+                    <!-- KATEGORİLER (Anasayfa ile Tam Eşitlendi) -->
                     <select id="new-category" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
-                        <option value="Ücretsiz">Ücretsiz Örnekler</option>
+                        <option value="Ücretsiz">Ücretsiz</option>
                         <option value="Özel Eğlence">Özel Eğlence</option>
                         <option value="Gece Serisi">Gece Serisi</option>
                         <option value="Mega Paket">Mega Paket</option>
                         <option value="Sinema & Dizi">Sinema & Dizi</option>
                     </select>
+
                     <input type="number" id="new-price" placeholder="Fiyat (₺)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-red-600">
-                    
-                    <input type="text" id="new-video-link" placeholder="Video İzleme/İndirme Linki (Streamable, Drive, Yandex vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
+                    <input type="text" id="new-video-link" placeholder="Video İzleme/İndirme Linki (Streamable, Drive vb.)" class="w-full bg-slate-950 border border-emerald-600/40 rounded-xl px-4 py-3 text-xs text-emerald-400 focus:outline-none placeholder-emerald-700/50">
 
                     <div>
-                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin (Otomatik Sıkıştırılır):</label>
+                        <label class="block text-[10px] text-slate-400 mb-1">Kapak Fotoğrafı Seçin:</label>
                         <input type="file" id="new-image" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-white cursor-pointer">
                     </div>
                 </div>
@@ -117,39 +119,17 @@
         </div>
     </div>
 
-    <!-- Şifreleme için hafif bir kütüphane ekliyoruz -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
         lucide.createIcons();
         const BIN_ID = '6a73c66cf5f4af5e29f07574';
         const MASTER_KEY = '$2a$10$zh2aEsam0mcpeFIrGF40pekMKtzirnqXSEFm27I6NOa1SGFR9bkG.';
 
-        // Şifrenin açık hali kodda görünmez, sadece şifrelenmiş hash değeri yer alır.
-        // Girilen şifre arka planda hashlenip bu değerle karşılaştırılır.
-        const ADMIN_HASH = "8f3952f403930b2c1248a349be8c3a96"; // MagnostakHeisenberg6767 şifresinin güvenli hash karşılığı
-
-        function simpleHash(string) {
-            let hash = 0;
-            if (string.length == 0) return hash;
-            for (let i = 0; i < string.length; i++) {
-                let char = string.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return hash.toString();
-        }
-
-        // Güvenli hash doğrulama
         function loginAdmin() {
-            let inputPass = document.getElementById('admin-pass').value;
-            // MagnostakHeisenberg6767 şifresinin doğrulaması
-            if(inputPass === "MagnostakHeisenberg6767") {
+            if(document.getElementById('admin-pass').value === "MagnostakHeisenberg6767") {
                 document.getElementById('admin-login-modal').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
                 loadData();
-            } else { 
-                alert("Hatalı Yönetici Şifresi!"); 
-            }
+            } else { alert("Hatalı Yönetici Şifresi!"); }
         }
 
         async function getDatabase() {
