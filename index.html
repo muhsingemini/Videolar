@@ -288,23 +288,37 @@
             }
         }
 
-        // KESİN ÇÖZÜM: CLOUDINARY RESMİ DEMO API (CORS HATASI VERMEZ)
-        async function uploadImageToCloud(file) {
-            let formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', 'docs_upload_example_preset'); // Cloudinary'nin dışarıya açık, şifresiz test preseti
-
-            let response = await fetch("https://api.cloudinary.com/v1_1/demo/image/upload", {
-                method: "POST",
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error("Güvenlik duvarı engelledi. Resmi yüklerken hata oluştu.");
+        // KÖKTEN ÇÖZÜM: RESMİ MİKRO BOYUTA SIKIŞTIRAN ÖZEL FONKSİYON (DIŞ SUNUCU YOK, HATA YOK)
+        function compressReceiptExtreme(file, callback) {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function (event) {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    
+                    // Boyutu iyice ufaltıyoruz ki veritabanı "büyük dosya" uyarısı vermesin
+                    const MAX_WIDTH = 400; 
+                    const MAX_HEIGHT = 600;
+                    let width = img.width; 
+                    let height = img.height;
+                    
+                    if (width > height) { 
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } 
+                    } else { 
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } 
+                    }
+                    
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Kaliteyi %40'a düşürüyoruz. Sadece bir dekont olduğu için yazılar okunur, ama dosya çok küçük olur.
+                    let ultraSmallBase64 = canvas.toDataURL('image/jpeg', 0.4);
+                    callback(ultraSmallBase64);
+                }
             }
-
-            let data = await response.json();
-            return data.secure_url; // https ile başlayan güvenli resim linki döner
         }
 
         async function checkout() {
@@ -316,38 +330,42 @@
             if (cart.length === 0) { alert("Lütfen sepetinize arşiv ekleyin!"); return; }
             if (fileInput.files.length === 0) { alert("Lütfen ödeme dekontu görselini yükleyin!"); return; }
 
-            btn.innerText = "Dekont Buluta Yükleniyor, Lütfen Bekleyin...";
+            btn.innerText = "Siparişiniz Sisteme Kaydediliyor...";
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
             try {
                 let file = fileInput.files[0];
                 
-                // 1. Resmi buluta (Cloudinary) yükleyip link alıyoruz
-                let receiptUrl = await uploadImageToCloud(file);
+                // Resmi alıp mikro boyuta sıkıştırıyoruz
+                compressReceiptExtreme(file, async function(microBase64) {
+                    try {
+                        let db = await getDatabase();
+                        if(!db.orders) db.orders = [];
+                        
+                        db.orders.push({
+                            id: 'ord_' + Date.now(), 
+                            username: currentUser.username,
+                            items: cart.map(i => i.name).join(", "),
+                            total: cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺",
+                            status: 'Bekliyor', 
+                            receipt: microBase64 // Küçücük yapılmış görseli kaydediyoruz
+                        });
 
-                btn.innerText = "Sipariş Kaydediliyor...";
-
-                // 2. Sadece linki JSONBin veritabanına kaydediyoruz
-                let db = await getDatabase();
-                if(!db.orders) db.orders = [];
-                
-                db.orders.push({
-                    id: 'ord_' + Date.now(), 
-                    username: currentUser.username,
-                    items: cart.map(i => i.name).join(", "),
-                    total: cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺",
-                    status: 'Bekliyor', 
-                    receipt: receiptUrl
+                        await saveDatabase(db);
+                        
+                        alert("Dekontunuz başarıyla iletildi! Admin onayından sonra arşiviniz açılacaktır.");
+                        location.reload();
+                    } catch(err) {
+                        alert("Hata oluştu. İnternet bağlantınızı kontrol edip tekrar deneyin.");
+                        btn.innerText = "Ödemeyi Bildir & Sipariş Oluştur";
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
                 });
 
-                await saveDatabase(db);
-                
-                alert("Dekontunuz başarıyla iletildi! Admin onayından sonra arşiviniz kalıcı olarak açılacaktır.");
-                location.reload();
-
             } catch(e) {
-                alert("Hata oluştu: " + e.message + "\n\nLütfen farklı bir fotoğraf seçin veya sayfayı yenileyin.");
+                alert("Beklenmeyen bir hata oluştu.");
                 btn.innerText = "Ödemeyi Bildir & Sipariş Oluştur";
                 btn.disabled = false;
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
