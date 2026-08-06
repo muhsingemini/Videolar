@@ -16,7 +16,7 @@
         .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
     </style>
 </head>
-<body class="bg-[#07090e] text-slate-300 min-h-screen selection:bg-red-600 selection:text-white relative">
+<body class="bg-[#07090e] text-slate-300 min-h-screen selection:bg-red-600 selection:text-white">
 
     <!-- Navbar -->
     <header class="border-b border-slate-900/80 sticky top-0 bg-[#07090e]/85 backdrop-blur-md z-40 transition-all">
@@ -42,13 +42,11 @@
             <p id="page-desc" class="text-slate-500 text-xs">Şifrelenmiş özel video setleri ve veri paketleri.</p>
         </div>
 
+        <!-- Sadeleştirilmiş Kategoriler -->
         <div class="flex flex-wrap justify-center gap-2 mb-10" id="category-filters">
             <button onclick="changeCategory('Tümü')" class="cat-btn bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-semibold transition shadow-lg shadow-red-600/20">Tümü</button>
             <button onclick="changeCategory('Ücretsiz')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Ücretsiz</button>
-            <button onclick="changeCategory('Özel Eğlence')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Özel Eğlence</button>
-            <button onclick="changeCategory('Gece Serisi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Gece Serisi</button>
-            <button onclick="changeCategory('Mega Paket')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Mega Paket</button>
-            <button onclick="changeCategory('Sinema & Dizi')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Sinema & Dizi</button>
+            <button onclick="changeCategory('Genel')" class="cat-btn bg-slate-900 border border-slate-800 text-slate-400 hover:text-white px-4 py-2 rounded-xl text-xs font-medium transition">Genel</button>
         </div>
 
         <div id="products-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
@@ -60,10 +58,9 @@
         </div>
     </main>
 
-    <!-- Auth Modal (Varsayılan olarak gizli "hidden" class'ı var) -->
-    <div id="auth-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div class="glass w-full max-w-md rounded-3xl p-8 border border-slate-800 relative shadow-2xl">
-            <button onclick="hideAuthModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
             <div class="text-center mb-6">
                 <h3 id="auth-title" class="text-xl font-bold text-white">Giriş Yap</h3>
             </div>
@@ -90,7 +87,6 @@
                 <div id="payment-accounts-list" class="space-y-2"></div>
             </div>
 
-            <!-- DEKONT YÜKLEME VE ÖNİZLEME ALANI -->
             <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 mb-6 text-xs">
                 <label class="block text-slate-400 mb-3 font-medium">Ödeme Dekontu Görseli (Zorunlu):</label>
                 
@@ -106,17 +102,6 @@
         </div>
     </div>
 
-    <!-- Telegram İletişim Butonu (Sabit) -->
-    <a href="https://t.me/xxvagdora" target="_blank" class="fixed bottom-6 right-6 bg-[#2AABEE] hover:bg-[#229ED9] text-white p-3.5 rounded-full shadow-lg shadow-[#2AABEE]/30 transition-all transform hover:scale-110 z-50 flex items-center justify-center group border border-[#2AABEE]/50">
-        <!-- Telegram İkonu (SVG) -->
-        <svg viewBox="0 0 24 24" class="w-7 h-7 fill-current" xmlns="http://www.w3.org/2000/svg">
-            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-        </svg>
-        
-        <!-- Üzerine gelince çıkan "Yaz" yazısı -->
-        <span class="absolute right-16 bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none border border-slate-700">Telegram'dan Bize Ulaşın</span>
-    </a>
-
     <script>
         lucide.createIcons();
         const BIN_ID = '6a73c66cf5f4af5e29f07574';
@@ -131,9 +116,6 @@
         const itemsPerPage = 12;
 
         window.onload = function() { checkSession(); loadStoreData(); checkUserDownloads(); }
-
-        function showAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); }
-        function hideAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
 
         function switchAuthMode() {
             isRegister = !isRegister;
@@ -156,7 +138,7 @@
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                 body: JSON.stringify(data)
             });
-            if(!res.ok) throw new Error("Veritabanı bağlantı hatası");
+            if(!res.ok) throw new Error("Veritabanı sınırı aşıldı veya bağlantı koptu.");
         }
 
         async function loadStoreData() {
@@ -189,19 +171,6 @@
             renderProducts();
         }
 
-        function handleProductAction(type, link, title, price, id) {
-            if (!currentUser) {
-                showAuthModal();
-                return;
-            }
-            
-            if (type === 'free') {
-                window.open(link, '_blank');
-            } else if (type === 'paid') {
-                addToCart(title, price, id);
-            }
-        }
-
         function renderProducts() {
             let grid = document.getElementById('products-grid');
             if(!grid) return;
@@ -225,10 +194,9 @@
                 let priceText = isFree ? '<span class="text-emerald-400 font-bold">Ücretsiz</span>' : `<span class="text-emerald-400 font-bold">${p.price} ₺</span>`;
                 
                 let realLink = p.videoLink || '#';
-                
                 let btnAction = isFree 
-                    ? `<button onclick="handleProductAction('free', '${realLink}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-emerald-600/20">Hemen İzle / İndir</button>` 
-                    : `<button onclick="handleProductAction('paid', null, '${p.title}', '${p.price}', '${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-red-600/20">Sepete Ekle</button>`;
+                    ? `<button onclick="window.open('${realLink}', '_blank')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-emerald-600/20">Hemen İzle / İndir</button>` 
+                    : `<button onclick="addToCart('${p.title}', '${p.price}', '${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold transition shadow-md shadow-red-600/20">Sepete Ekle</button>`;
 
                 grid.innerHTML += `
                     <div class="glass rounded-3xl p-5 flex flex-col justify-between card-hover animate-fade">
@@ -270,7 +238,7 @@
                 if(db.users.some(u => u.username === username)) { alert("Kullanıcı adı alınmış!"); return; }
                 db.users.push({ username, password: pass });
                 await saveDatabase(db);
-                alert("Kayıt başarılı! Lütfen şimdi giriş yapın."); switchAuthMode();
+                alert("Kayıt başarılı!"); switchAuthMode();
             } else {
                 let user = db.users.find(u => u.username === username && u.password === pass);
                 if(user) {
@@ -284,10 +252,7 @@
             if(currentUser) {
                 document.getElementById('auth-modal').classList.add('hidden');
                 document.getElementById('user-display').innerHTML = `<span class="text-slate-500">Üye:</span> <strong class="text-slate-200">${currentUser.username}</strong> | <button onclick="logout()" class="text-red-500 hover:underline ml-1 font-bold">Çıkış</button>`;
-            } else {
-                document.getElementById('auth-modal').classList.add('hidden');
-                document.getElementById('user-display').innerHTML = `<button onclick="showAuthModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-lg shadow-red-600/20">Giriş Yap</button>`;
-            }
+            } else { document.getElementById('auth-modal').classList.remove('hidden'); }
         }
 
         function logout() { localStorage.removeItem('heisenberg_user'); location.reload(); }
@@ -351,7 +316,7 @@
         }
 
         async function checkout() {
-            if (!currentUser) { showAuthModal(); return; }
+            if (!currentUser) { alert("Lütfen önce giriş yapın!"); return; }
 
             const fileInput = document.getElementById('receipt-file');
             const btn = document.getElementById('checkout-btn');
@@ -377,7 +342,7 @@
                             items: cart.map(i => i.name).join(", "),
                             total: cart.reduce((sum, i) => sum + parseInt(i.price), 0) + " ₺",
                             status: 'Bekliyor', 
-                            receipt: microBase64 
+                            receipt: microBase64
                         });
 
                         await saveDatabase(db);
