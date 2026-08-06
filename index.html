@@ -114,7 +114,7 @@
                 <input type="file" id="receipt-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-red-600 file:text-white cursor-pointer transition">
             </div>
 
-            <button onclick="checkout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-emerald-600/20">Ödemeyi Bildir & Sipariş Oluştur</button>
+            <button onclick="checkout()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl transition text-xs shadow-lg shadow-red-600/20">Ödemeyi Bildir & Sipariş Oluştur</button>
         </div>
     </div>
 
@@ -170,14 +170,11 @@
 
         async function loadStoreData() {
             let db = await getDatabase();
-            allProducts = db.products || [];
-            
-            if(allProducts.length === 0) {
-                allProducts = [
-                    { id: 'p0', title: 'Ücretsiz Örnek Demo Video', category: 'Ücretsiz', price: '0', image: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500' },
-                    { id: 'p1', title: 'Özel Eğlence Vol. 1', category: 'Özel Eğlence', price: '150', image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500' }
-                ];
-            }
+            // JSONBin'den gelen veride products yoksa veya boşsa varsayılanları koyuyoruz, aksi halde buluttakileri alıyoruz
+            allProducts = (db.products && db.products.length > 0) ? db.products : [
+                { id: 'p0', title: 'Ücretsiz Örnek Demo Video', category: 'Ücretsiz', price: '0', image: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=500' },
+                { id: 'p1', title: 'Özel Eğlence Vol. 1', category: 'Özel Eğlence', price: '150', image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500' }
+            ];
             renderProducts();
             renderPaymentAccounts(db.accounts || []);
         }

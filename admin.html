@@ -255,7 +255,7 @@
             if(!db.products) db.products = [];
             db.products.push({ id: 'prod_' + Date.now(), title, category, price, image: imageUrl });
             await saveDatabase(db);
-            alert("Video arşivi başarıyla eklendi!");
+            alert("Video arşivi resmiyle birlikte başarıyla eklendi!");
             location.reload();
         }
 
